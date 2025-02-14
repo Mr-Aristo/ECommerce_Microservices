@@ -1,8 +1,4 @@
-﻿using System.Diagnostics;
-using MediatR;
-using Microsoft.Extensions.Logging;
-
-namespace BuildingBlock.Behaviors;
+﻿namespace BuildingBlock.Behaviors;
 
 public class LoggingBehavior<TRequest, TResponse>
     (ILogger<LoggingBehavior<TRequest, TResponse>> logger) : IPipelineBehavior<TRequest, TResponse>
