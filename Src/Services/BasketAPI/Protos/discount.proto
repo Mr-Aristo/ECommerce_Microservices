@@ -1,0 +1,54 @@
+﻿syntax = "proto3"; 
+
+option csharp_namespace = "DiscountGrpc.Protos";
+
+package discount;
+
+service DiscountProtoService {
+	// Discount CRUD Operations
+	rpc GetDiscount (GetDiscountRequest) returns (CouponModel);
+	rpc CreateDiscount (CreateDiscountRequest) returns (CouponModel);
+	rpc UpdateDiscount (UpdateDiscountRequest) returns (CouponModel);
+	rpc DeleteDiscount (DeleteDiscountRequest) returns (DeleteDiscountResponse);
+}
+/*
+bos bir fonksiyon icin 
+rpc GetDiscount () returns (CouponModel);
+once import olarak bos proto eklenip sonra parametre gecilmeli.
+import "google/protobuf/empty.proto";
+rpc GetDiscount (google.protobuf.Empty) returns (CouponModel);
+*/
+message GetDiscountRequest {
+	string productName = 1;
+}
+
+message CouponModel {
+	int32 id = 1;
+	string productName = 2;
+	string description = 3;
+	int32 amount = 4;
+}
+/*
+birden fazla ururn dondurmek icin repeated kullanilir.
+message ProductListResponse {
+    repeated ProductModel Products = 1;
+}
+*/
+message CreateDiscountRequest {
+	CouponModel coupon = 1;
+}
+
+message UpdateDiscountRequest {
+	CouponModel coupon = 1;
+}
+
+message DeleteDiscountRequest {
+	string productName = 1;
+}
+
+message DeleteDiscountResponse {
+	bool success = 1;
+}
+
+//Sagtiklayarek properties den build action ve stup class ayarlarinin yapmalisin.
+//Ayrica proto yu itemgroups icine eklemelisin.

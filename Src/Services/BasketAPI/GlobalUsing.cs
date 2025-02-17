@@ -1,0 +1,13 @@
+﻿global using BasketAPI.Models;
+global using Marten;
+global using Carter;
+global using MediatR;
+global using Mapster;
+global using System.Text.Json;
+global using BuildingBlock.CQRS;
+global using BuildingBlock.Behaviors;
+global using BuildingBlock.CQRS.Handlers;
+global using BasketAPI.Data;
+global using FluentValidation;
+global using BasketAPI.Data.Abstracts;
+global using BasketAPI.DTOs;
