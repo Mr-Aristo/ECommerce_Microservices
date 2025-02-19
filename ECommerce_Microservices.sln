@@ -21,6 +21,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscountGrpc", "Src\Service
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{571FE49E-6D90-46FC-AB50-B592593BCC03}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{D18F4AB7-8DA9-47FE-AFC1-DA37FFFC4129}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECommerce_Tests", "Tests\ECommerce_Tests\ECommerce_Tests.csproj", "{7DA273E6-FEBF-450D-B26E-375E33605A77}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +55,10 @@ Global
 		{571FE49E-6D90-46FC-AB50-B592593BCC03}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{571FE49E-6D90-46FC-AB50-B592593BCC03}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{571FE49E-6D90-46FC-AB50-B592593BCC03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7DA273E6-FEBF-450D-B26E-375E33605A77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7DA273E6-FEBF-450D-B26E-375E33605A77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7DA273E6-FEBF-450D-B26E-375E33605A77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7DA273E6-FEBF-450D-B26E-375E33605A77}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -63,5 +71,6 @@ Global
 		{823943C0-0336-45FF-9BB0-B403F4BD3C90} = {B501A6B5-F51C-4FD8-9D3A-BCC6A248953E}
 		{F5EC3453-56EC-4D85-B33C-422857CF06C6} = {B501A6B5-F51C-4FD8-9D3A-BCC6A248953E}
 		{4528DA5A-2F60-4987-97C1-DB01B8901E43} = {B501A6B5-F51C-4FD8-9D3A-BCC6A248953E}
+		{7DA273E6-FEBF-450D-B26E-375E33605A77} = {D18F4AB7-8DA9-47FE-AFC1-DA37FFFC4129}
 	EndGlobalSection
 EndGlobal

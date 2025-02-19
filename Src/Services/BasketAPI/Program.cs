@@ -1,4 +1,5 @@
 ﻿using BuildingBlock.Exceptions.Handlers;
+using DiscountGrpc.Protos;
 using JasperFx.Core;
 
 namespace BasketAPI;
@@ -43,10 +44,10 @@ public class Program
             .AddRedis(builder.Configuration.GetConnectionString("Redis")!);
 
         //Grpc Services
-        //builder.Services.AddGrpcClient<DiscountProtoService.DiscountProtoServiceClient>(options =>
-        //{
-        //    options.Address = new Uri(builder.Configuration["GrpcSettings:DiscountUrl"]!);//appsettings.json
-        //});
+        builder.Services.AddGrpcClient<DiscountProtoService.DiscountProtoServiceClient>(options =>
+        {
+            options.Address = new Uri(builder.Configuration["GrpcSettings:DiscountUrl"]!);//appsettings.json
+        });
 
 
         var app = builder.Build();
