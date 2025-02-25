@@ -49,6 +49,8 @@ message DeleteDiscountRequest {
 message DeleteDiscountResponse {
 	bool success = 1;
 }
+//myproto.proto ya sag tiklayarak properties ve oradan build Action, gRPC gibi kisimlardan grpc hizmetleriyle
+//etkilesime gecebiliriz. 
+//build action ve startup class ayarlarinin yapmalisin.
 
-//Sagtiklayarek properties den build action ve stup class ayarlarinin yapmalisin.
-//Ayrica proto yu itemgroups icine eklemelisin.
+
