@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35707.178
@@ -90,7 +90,7 @@ Global
 		{A841CE6D-B5CD-433C-A833-878213BEC60C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A841CE6D-B5CD-433C-A833-878213BEC60C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A841CE6D-B5CD-433C-A833-878213BEC60C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A841CE6D-B5CD-433C-A833-878213BEC60C}.Release|Any CPU.Build.0 = Release|Any CPU
+
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -112,5 +112,6 @@ Global
 		{3B69E558-DF8E-4A9B-8921-4D5C42D6044C} = {95FAAC0E-DB4B-46EF-BC6A-F52964BF30DC}
 		{4D6FC9E9-8DD1-469B-B638-EBB29759D7BD} = {95FAAC0E-DB4B-46EF-BC6A-F52964BF30DC}
 		{A841CE6D-B5CD-433C-A833-878213BEC60C} = {95FAAC0E-DB4B-46EF-BC6A-F52964BF30DC}
+
 	EndGlobalSection
 EndGlobal

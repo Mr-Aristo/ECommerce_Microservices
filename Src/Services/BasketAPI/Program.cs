@@ -48,10 +48,8 @@ public class Program
         {
             options.Address = new Uri(builder.Configuration["GrpcSettings:DiscountUrl"]!);//appsettings.json
         });
-
-
+      
         var app = builder.Build();
-
 
         // Configure the HTTP request pipeline.
      
