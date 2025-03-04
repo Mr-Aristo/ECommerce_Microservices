@@ -1,0 +1,10 @@
+﻿global using BuildingBlock.Exceptions.Handlers;
+global using HealthChecks.UI.Client;
+global using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+global using Carter;
+global using Order.Application;
+global using Order.Infrastructure;
+global using Order.API;
+global using Mapster;
+global using MediatR;
+global using Order.Application.DTOs;

@@ -1,12 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MassTransit;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
-namespace BuildingBlockMessaging.MassTransit
+
+namespace BuildingBlockMessaging.MassTransit;
+
+public static class Extentions
 {
-    internal class Extentions
+    public static IServiceCollection AddMessageBroker(IServiceCollection service, IConfiguration configuration, Assembly? assembly = null)
     {
+        service.AddMassTransit(config =>
+        {
+            config.SetKebabCaseEndpointNameFormatter();
+
+            if (assembly == null)
+                config.AddConsumers(assembly);
+
+            config.UsingRabbitMq((context, configurator) =>
+            {
+                configurator.Host(new Uri(configuration["MessageBroker:Host"]!), host =>
+                {
+                    host.Username(configuration["MessageBroker:UserName"]);
+                    host.Password(configuration["MessageBroker:Password"]);
+                });
+                configurator.ConfigureEndpoints(context);
+            });
+            
+        });
+
+        return service; 
     }
 }
