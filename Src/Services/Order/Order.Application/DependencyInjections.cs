@@ -1,4 +1,4 @@
-﻿using BuildingBlock.Behaviors;
+using BuildingBlock.Behaviors;
 using BuildingBlockMessaging.MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
