@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace BuildingBlockMessaging.Events;
 
-namespace BuildingBlockMessaging.Events
+public record IntegrationEvent
 {
-    internal class IntegrationEvent
-    {
-    }
+    public Guid id => Guid.NewGuid(); 
+    public DateTime OccuredOn => DateTime.UtcNow;
+    public string EventType => GetType().AssemblyQualifiedName;
 }
