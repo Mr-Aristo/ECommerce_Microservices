@@ -1,8 +1,6 @@
 ﻿namespace BuildingBlock.Behaviors;
 
-public class ValidationBehavior<TRequest, TResponse>
-    (IEnumerable<IValidator<TRequest>> validators)
-    : IPipelineBehavior<TRequest, TResponse>
+public class ValidationBehavior<TRequest, TResponse> (IEnumerable<IValidator<TRequest>> validators) : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest
 {
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
@@ -14,7 +12,7 @@ public class ValidationBehavior<TRequest, TResponse>
 
         var failures = validationResults
                        .Where(r => r.Errors.Any())
-                       .SelectMany(r=> r.Errors)
+                       .SelectMany(r => r.Errors)
                        .ToList();
         if (failures.Any())
             throw new ValidationException(failures);
