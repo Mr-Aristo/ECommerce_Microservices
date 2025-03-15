@@ -7,6 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="OrdersCQRS\EventHandlers\Domain\" />
+    <Folder Include="OrdersCQRS\EventHandlers\Integration\" />
+    <Folder Include="OrdersCQRS\Queries\GetOrders\" />
+    <Folder Include="OrdersCQRS\Queries\GetOrderByCustomer\" />
+    <Folder Include="OrdersCQRS\Queries\GetOrderByName\" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.2" />
     <PackageReference Include="Microsoft.FeatureManagement" Version="4.0.0" />
