@@ -8,3 +8,7 @@ global using BuildingBlock.CQRS;
 global using Order.Application.Extentions;
 global using Order.Domain.ValueObjects;
 global using FluentValidation;
+global using BuildingBlock.Pagination;
+global using MediatR;
+global using Microsoft.Extensions.Logging;
+

@@ -4,7 +4,7 @@
 /// Catches events
 /// </summary>
 /// <param name="order"></param>
-public record OrderCreatedEvent(Orders order):IDomainEvent;
+public record OrderCreatedEvent(Orders order) : IDomainEvent;
 
 
 
