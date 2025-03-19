@@ -1,23 +1,23 @@
 # E-Commerce Project With Microservices
 ## Project Architecture 
 ### Whole project
-![BigPicture](https://github.com/Mr-Aristo/E-Shop_Microservices/blob/master/ProjectArchitecture/Big%20picture.png)
+![BigPicture](https://github.com/Mr-Aristo/E-Shop_Microservices/tree/master/ProjectArchitecture/Big%20picture.png)
 
 
 ### Catalog Service 
-![Catalog](https://github.com/Mr-Aristo/E-Shop_Microservices/blob/master/ProjectArchitecture/Catalog.png)
+![Catalog](https://github.com/Mr-Aristo/E-Shop_Microservices/tree/master/ProjectArchitecture/Catalog.png)
 
 ### Ordering Service 
-![Ordering](https://github.com/Mr-Aristo/E-Shop_Microservices/blob/master/ProjectArchitecture/ordering.png)
+![Ordering](https://github.com/Mr-Aristo/E-Shop_Microservices/tree/master/ProjectArchitecture/ordering.png)
 
 ### Basket Service 
-![Basket](https://github.com/Mr-Aristo/E-Shop_Microservices/blob/master/ProjectArchitecture/Basket.png)
+![Basket](https://github.com/Mr-Aristo/E-Shop_Microservices/tree/master/ProjectArchitecture/Basket.png)
 
 ### Discount Service
-![Discount](https://github.com/Mr-Aristo/E-Shop_Microservices/blob/master/ProjectArchitecture/Discount.png)
+![Discount](https://github.com/Mr-Aristo/E-Shop_Microservices/tree/master/ProjectArchitecture/Discount.png)
 
 ### API Gateway 
-![ApiGateway](https://github.com/Mr-Aristo/E-Shop_Microservices/blob/master/ProjectArchitecture/APi%20GetWay.png)
+![ApiGateway](https://github.com/Mr-Aristo/E-Shop_Microservices/tree/master/ProjectArchitecture/APi%20GetWay.png)
 
 ### Web Client 
-![Client](https://github.com/Mr-Aristo/E-Shop_Microservices/blob/master/ProjectArchitecture/WEbClient.png)
+![Client](https://github.com/Mr-Aristo/E-Shop_Microservices/tree/master/ProjectArchitecture/WEbClient.png)
