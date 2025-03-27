@@ -32,11 +32,18 @@ public class Program
             opts.Schema.For<ShoppingCard>().Identity(x => x.UserName);
         });
 
+        builder.Services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = builder.Configuration.GetConnectionString("Redis");
+            //options.InstanceName = "Basket";
+        });
+
         //Dependency Injection With Scrutor ("Decorator Pattern") library
         builder.Services.AddScoped<IBasketRepository ,BasketRepository>();
         builder.Services.Decorate<IBasketRepository, CachedBasketRepository>();
         builder.Services.AddExceptionHandler<CustomExceptionHandler>();//From BuildingBlock
        //IBasketRepository calls → CachedBasketRepository runs → Cache check → (if there is no Cache) DB calls and cache updates.
+      
 
         //HealthCheck
         builder.Services.AddHealthChecks()
@@ -48,12 +55,21 @@ public class Program
         {
             options.Address = new Uri(builder.Configuration["GrpcSettings:DiscountUrl"]!);//appsettings.json
         });
-      
+
+        //MessageBroker
+        builder.Services.AddMessageBroker(builder.Configuration);
+        
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
+        app.MapCarter();
+        app.UseExceptionHandler(options => { });
+        app.UseHealthChecks("/health",
+        new HealthCheckOptions
+        {
+            ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+        });
      
-
         app.Run();
     }
 }
