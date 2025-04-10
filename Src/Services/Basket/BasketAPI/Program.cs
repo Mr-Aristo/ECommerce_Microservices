@@ -1,6 +1,7 @@
 ﻿using BuildingBlock.Exceptions.Handlers;
 using DiscountGrpc.Protos;
-using JasperFx.Core;
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 namespace BasketAPI;
 
@@ -57,8 +58,10 @@ public class Program
         });
 
         //MessageBroker
+
+
         builder.Services.AddMessageBroker(builder.Configuration);
-        
+
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.

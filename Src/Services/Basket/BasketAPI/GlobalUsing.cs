@@ -11,3 +11,4 @@ global using BasketAPI.Data;
 global using FluentValidation;
 global using BasketAPI.Data.Abstracts;
 global using BasketAPI.DTOs;
+global using BuildingBlockMessaging.MassTransit; 

@@ -19,6 +19,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Marten" Version="7.37.1" />
+    <PackageReference Include="MassTransit" Version="8.4.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.2" />
     <PackageReference Include="Scrutor" Version="6.0.1" />
   </ItemGroup>
@@ -30,7 +31,7 @@
 
 
   <ItemGroup>
-    <Protobuf Include="Protos\discount.proto" GrpcServices="Client"/>
+    <Protobuf Include="Protos\discount.proto" GrpcServices="Client" />
   </ItemGroup>
 
 </Project>
