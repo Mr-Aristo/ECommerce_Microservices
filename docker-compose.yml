@@ -8,7 +8,6 @@ services:
   distributedcache:
     image: redis
 
-
   catalogapi:
     image: ${DOCKER_REGISTRY-}catalogapi
     build:
@@ -27,8 +26,13 @@ services:
       context: .
       dockerfile: Src/Services/DiscountGrpc/Dockerfile
 
+  messagebroker:
+    image: rabbitmq:management
+
 volumes:
   postgres_catalog:
   postgres_basket:
+
+
 
 

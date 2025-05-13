@@ -60,7 +60,7 @@ public class Program
         //MessageBroker
 
 
-        builder.Services.AddMessageBroker(builder.Configuration);
+       // builder.Services.AddMessageBroker(builder.Configuration);
 
         var app = builder.Build();
 
