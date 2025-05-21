@@ -6,7 +6,7 @@ public interface IEntity<T> : IEntity
 }
 public interface IEntity
 {
-    /* Audit (Denetim, İzleme) */
+    /* Audit (Denetim, İzleme)  Sistemde ne olduğunu tarihsel olarak kaydetme */
     public DateTime? CreatedAt { get; set; }
     public string? CreatedBy { get; set; }
 

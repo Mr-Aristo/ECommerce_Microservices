@@ -2,7 +2,7 @@
 
 public abstract class Aggregate<TId> : Entity<TId>, IAggregate<TId>
 {
-    private readonly List<IDomainEvent> _domainEvents;
+    private readonly List<IDomainEvent> _domainEvents = new();
     public IReadOnlyList<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
 
     public void AddDomainEvent(IDomainEvent domainEvent)
@@ -10,7 +10,7 @@ public abstract class Aggregate<TId> : Entity<TId>, IAggregate<TId>
         _domainEvents.Add(domainEvent);
 
     }
-    
+
     public IDomainEvent[] ClearDomainEvents()
     {
         IDomainEvent[] dequeuedEvents = _domainEvents.ToArray();
