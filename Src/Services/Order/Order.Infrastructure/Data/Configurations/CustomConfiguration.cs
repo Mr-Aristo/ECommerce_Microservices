@@ -22,4 +22,5 @@ public class CustomConfiguration : IEntityTypeConfiguration<Customer>
 /*
  HasMany/WithOne - one to many relation
  HasOna/WithMany - many to one relation
+
  */
