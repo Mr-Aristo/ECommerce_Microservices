@@ -10,12 +10,12 @@ public class OrderConfiguration : IEntityTypeConfiguration<Orders>
                         orderId => orderId.Value,
                         dbId => OrderId.Of(dbId));
 
-        builder.HasOne<Customer>()
+        builder.HasOne<Customer>() // Many To One Relation 
           .WithMany()
           .HasForeignKey(o => o.CustomerId)
           .IsRequired();
 
-        builder.HasMany(o => o.OrderItems)
+        builder.HasMany(o => o.OrderItems) // One To Many Relation 
             .WithOne()
             .HasForeignKey(oi => oi.OrderId);
 
