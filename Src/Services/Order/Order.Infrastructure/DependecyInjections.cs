@@ -19,7 +19,7 @@ public static class DependecyInjections
 
         services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
-            options.AddInterceptors(sp.GetServices<ISaveChangesInterceptor>());
+            options.AddInterceptors(sp.GetServices<ISaveChangesInterceptor>()); 
             options.UseSqlServer(connectionString);
         });
 
