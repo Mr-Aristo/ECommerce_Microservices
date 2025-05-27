@@ -19,3 +19,7 @@ public class CustomConfiguration : IEntityTypeConfiguration<Customer>
         builder.HasIndex(c => c.Email).IsUnique();
     }
 }
+/*
+ HasMany/WithOne - one to many relation
+ HasOna/WithMany - many to one relation
+ */
