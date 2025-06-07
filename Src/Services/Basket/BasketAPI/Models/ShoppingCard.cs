@@ -2,7 +2,7 @@
 {
     public class ShoppingCard
     {
-        //string? vs default! - 1 - can be null but need to check in code / it okay to be null at the begining but after that cannot be null
+        //string? vs default! - 1 - can be null but need to check in code / it's okay to be null at the begining but after that cannot be null
 
         public string UserName { get; set; } = default!;
 
