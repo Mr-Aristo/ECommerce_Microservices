@@ -8,10 +8,26 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Carter" Version="9.0.0" />
     <PackageReference Include="coverlet.collector" Version="6.0.2" />
+    <PackageReference Include="Mapster" Version="7.4.0" />
+    <PackageReference Include="MediatR" Version="12.5.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Src\BuildingBlocks\BuildingBlockMessaging\BuildingBlockMessaging.csproj" />
+    <ProjectReference Include="..\..\Src\BuildingBlocks\BuildingBlock\BuildingBlock.csproj" />
+    <ProjectReference Include="..\..\Src\Services\Basket\BasketAPI\BasketAPI.csproj" />
+    <ProjectReference Include="..\..\Src\Services\CatalogAPI\CatalogAPI.csproj" />
+    <ProjectReference Include="..\..\Src\Services\DiscountGrpc\DiscountGrpc.csproj" />
+    <ProjectReference Include="..\..\Src\Services\Order\Order.API\Order.API.csproj" />
+    <ProjectReference Include="..\..\Src\Services\Order\Order.Application\Order.Application.csproj" />
+    <ProjectReference Include="..\..\Src\Services\Order\Order.Domain\Order.Domain.csproj" />
+    <ProjectReference Include="..\..\Src\Services\Order\Order.Infrastructure\Order.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
