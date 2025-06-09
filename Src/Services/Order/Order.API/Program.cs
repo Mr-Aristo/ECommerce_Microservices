@@ -15,6 +15,7 @@ app.UseApiServices();
 
 if (app.Environment.IsDevelopment())
 {
+    // Auto Migrate
     await app.InitialiseDatabaseAsync();
 }
 
