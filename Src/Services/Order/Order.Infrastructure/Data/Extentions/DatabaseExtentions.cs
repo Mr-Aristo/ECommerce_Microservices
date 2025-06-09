@@ -11,6 +11,7 @@ public static class DatabaseExtentions
 
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
+        // Auto migrate
         context.Database.MigrateAsync().GetAwaiter().GetResult();
 
         await SeedAsync(context);
