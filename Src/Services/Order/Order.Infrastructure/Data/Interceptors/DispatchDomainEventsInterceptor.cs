@@ -9,7 +9,7 @@ public class DispatchDomainEventsInterceptor(IMediator mediator)
 {
     public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
     {
-        DispatchDomainEvents(eventData.Context).GetAwaiter().GetResult();
+        DispatchDomainEvents(eventData.Context).GetAwaiter().GetResult(); // .GetAwaiter().GetResult() for sync call.
         return base.SavingChanges(eventData, result);
     }
 
