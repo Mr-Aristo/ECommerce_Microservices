@@ -11,17 +11,19 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Add services to the container.
-        builder.Services.AddGrpc();
 
         //MediatR config
         var assembly = typeof(Program).Assembly;
+
         builder.Services.AddMediatR(config =>
         {
             config.RegisterServicesFromAssembly(assembly);
             config.AddOpenBehavior(typeof(ValidationBehavior<,>));//<,> MediatR Open Generics
             config.AddOpenBehavior(typeof(LoggingBehavior<,>));
         });
+
+        // Add services to the container.
+        builder.Services.AddGrpc();
 
         //MinimalAPIs
         builder.Services.AddCarter();
@@ -36,31 +38,40 @@ public class Program
         builder.Services.AddStackExchangeRedisCache(options =>
         {
             options.Configuration = builder.Configuration.GetConnectionString("Redis");
-            //options.InstanceName = "Basket";
+            options.InstanceName = "Basket";
         });
 
         //Dependency Injection With Scrutor ("Decorator Pattern") library
-        builder.Services.AddScoped<IBasketRepository ,BasketRepository>();
+        builder.Services.AddScoped<IBasketRepository, BasketRepository>();
         builder.Services.Decorate<IBasketRepository, CachedBasketRepository>();
         builder.Services.AddExceptionHandler<CustomExceptionHandler>();//From BuildingBlock
-       //IBasketRepository calls → CachedBasketRepository runs → Cache check → (if there is no Cache) DB calls and cache updates.
-      
+                                                                       //IBasketRepository calls → CachedBasketRepository runs → Cache check → (if there is no Cache) DB calls and cache updates.
+
+        //Grpc Services
+        builder.Services.AddGrpcClient<DiscountProtoService.DiscountProtoServiceClient>(options =>
+        {
+            options.Address = new Uri(builder.Configuration["GrpcSettings:DiscountUrl"]!);//appsettings.json
+        })
+         .ConfigurePrimaryHttpMessageHandler(() =>
+        {
+            var handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback =
+                HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            };
+
+            return handler;
+        });
+
+        //MessageBroker
+        builder.Services.AddMessageBroker(builder.Configuration);
+
 
         //HealthCheck
         builder.Services.AddHealthChecks()
             .AddNpgSql(builder.Configuration.GetConnectionString("PostgreDataBase")!)
             .AddRedis(builder.Configuration.GetConnectionString("Redis")!);
 
-        //Grpc Services
-        builder.Services.AddGrpcClient<DiscountProtoService.DiscountProtoServiceClient>(options =>
-        {
-            options.Address = new Uri(builder.Configuration["GrpcSettings:DiscountUrl"]!);//appsettings.json
-        });
-
-        //MessageBroker
-
-
-        builder.Services.AddMessageBroker(builder.Configuration);
 
         var app = builder.Build();
 
@@ -68,11 +79,12 @@ public class Program
         app.MapCarter();
         app.UseExceptionHandler(options => { });
         app.UseHealthChecks("/health",
-        new HealthCheckOptions
-        {
-            ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-        });
-     
+            new HealthCheckOptions
+            {
+                 ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+            }
+        );
+
         app.Run();
     }
 }
