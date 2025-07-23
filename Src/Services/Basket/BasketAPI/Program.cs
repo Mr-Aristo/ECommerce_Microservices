@@ -64,7 +64,7 @@ public class Program
         });
 
         //MessageBroker
-        builder.Services.AddMessageBroker(builder.Configuration);
+        builder.Services.AddMessageBroker(builder.Configuration,assembly);
 
 
         //HealthCheck
