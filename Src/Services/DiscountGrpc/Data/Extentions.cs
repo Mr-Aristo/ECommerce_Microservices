@@ -10,11 +10,11 @@ public static class Extentions
     /// </summary>
     /// <param name="app">The application builder instance.</param>
     /// <returns>The application builder instance for further configuration chaining.</returns>
-    public static IApplicationBuilder UseMigration(this IApplicationBuilder app)
+    public static async Task<IApplicationBuilder> UseMigrationAsync(this IApplicationBuilder app)
     {
         using var scope = app.ApplicationServices.CreateScope();
         using var dbContext = scope.ServiceProvider.GetRequiredService<DiscountContext>();
-        dbContext.Database.MigrateAsync();
+        await dbContext.Database.MigrateAsync();
 
         return app; 
     }

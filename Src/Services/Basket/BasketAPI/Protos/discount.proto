@@ -12,9 +12,9 @@ service DiscountProtoService {
 	rpc DeleteDiscount (DeleteDiscountRequest) returns (DeleteDiscountResponse);
 }
 /*
-bos bir fonksiyon icin 
+for the empty function
 rpc GetDiscount () returns (CouponModel);
-once import olarak bos proto eklenip sonra parametre gecilmeli.
+firstly with import keyword need to add Empty proto and then empty prote must bass as parameter
 import "google/protobuf/empty.proto";
 rpc GetDiscount (google.protobuf.Empty) returns (CouponModel);
 */
@@ -29,7 +29,7 @@ message CouponModel {
 	int32 amount = 4;
 }
 /*
-birden fazla ururn dondurmek icin repeated kullanilir.
+to return more than one product or something else need to use keyword repeated
 message ProductListResponse {
     repeated ProductModel Products = 1;
 }
