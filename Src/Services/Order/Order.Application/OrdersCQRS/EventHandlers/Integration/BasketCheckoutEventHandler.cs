@@ -8,12 +8,15 @@ namespace Order.Application.OrdersCQRS.EventHandlers.Integration;
 
 public class BasketCheckoutEventHandler(ISender sender, ILogger<BasketCheckoutEventHandler> logger) : IConsumer<BasketCheckoutEvent>
 {
-    public Task Consume(ConsumeContext<BasketCheckoutEvent> context)
+    public async Task Consume(ConsumeContext<BasketCheckoutEvent> context)
     {
-        throw new NotImplementedException();
+        logger.LogInformation("Integration event handled:{IntegrationEvent}", context.Message.GetType().Name);
+
+        var command = MapToCreateOrderCommand(context.Message);
+        await context.Send(command);
     }
 
-    private CreateOrderCommand MapToOrderCommand(BasketCheckoutEvent message)
+    private CreateOrderCommand MapToCreateOrderCommand(BasketCheckoutEvent message)
     {
         // Create full order with incoming event data
         var addressDto = new AddressDto(
