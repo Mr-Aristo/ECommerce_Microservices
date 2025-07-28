@@ -3,6 +3,8 @@
 /// <summary>
 /// Value object representing a strongly-typed identifier for an <c>Order</c>.
 /// Enforces non-empty <see cref="Guid"/> values and helps avoid primitive obsession.
+/// Avoiding primitive obsession (it is a anti-pattern). As a id like giud, int... 
+/// Strongly typed Ids reduces mistakes and mistunderstading and decreses readabilty of the code.
 /// </summary>
 /// <remarks>
 /// Using strongly-typed IDs improves code readability, reduces ambiguity,
@@ -42,5 +44,3 @@ public record OrderId
         return new OrderId(value);
     }
 }
-//Avoiding primitive obsession (it is a anti-pattern). As a id like giud, int... 
-//Strongly typed Ids reduces mistakes and mistunderstading and decreses readabilty of the code.
