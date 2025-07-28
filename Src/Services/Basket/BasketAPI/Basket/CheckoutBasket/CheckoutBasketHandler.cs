@@ -3,7 +3,7 @@ using MassTransit;
 
 namespace BasketAPI.Basket.CheckoutBasket;
 
-/** Recods **/
+/** Records **/
 public record CheckoutBasketCommand(BasketCheckoutDto BasketCheckoutDto) : ICommand<CheckoutBasketResult>;
 public record CheckoutBasketResult(bool IsSuccess);
 /***********/
@@ -35,7 +35,7 @@ public class CheckoutBasketHandler(IBasketRepository repository , IPublishEndpoi
         var eventMessage = command.BasketCheckoutDto.Adapt<BasketCheckoutEvent>();
         eventMessage.TotalPrice = basket.TotalPrice;
 
-        await publishEndpoint.Publish(eventMessage, cancellationToken);
+        await publishEndpoint.Publish(eventMessage, cancellationToken); 
 
         await repository.DeleteBasket(command.BasketCheckoutDto.UserName, cancellationToken);
 

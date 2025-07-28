@@ -21,7 +21,7 @@ public static class DependencyInjections
         });
 
         service.AddFeatureManagement();
-        //service.AddMessageBroker(configuration, Assembly.GetExecutingAssembly);
+        service.AddMessageBroker(configuration,Assembly.GetExecutingAssembly());
 
         return service;
     }
