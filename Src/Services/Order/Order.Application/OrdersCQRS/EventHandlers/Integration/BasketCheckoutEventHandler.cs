@@ -2,7 +2,7 @@
 using BuildingBlockMessaging.Events;
 using MassTransit;
 using Order.Application.OrdersCQRS.Commands.CreateOrder;
-using Order.Domain.ValueObjects;
+
 
 namespace Order.Application.OrdersCQRS.EventHandlers.Integration;
 
