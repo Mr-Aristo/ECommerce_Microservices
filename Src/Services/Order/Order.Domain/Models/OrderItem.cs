@@ -3,6 +3,11 @@
 public class OrderItem : Entity<OrderItemId>
 {
     //Strongly typed ID OrderId, ProductId
+
+    // <summary>
+    /// Represents a line item in an order, containing product, quantity, and price details.
+    /// Inherits from <see cref="Entity{OrderItemId}"/> with a strongly typed identifier.
+    /// </summary>
     internal OrderItem(OrderId orderId, ProductId productId, int quantity, decimal price)
     {
         Id = OrderItemId.Of(Guid.NewGuid());

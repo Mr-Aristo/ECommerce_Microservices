@@ -1,19 +1,43 @@
 ﻿namespace Order.Domain.Abstractions;
 
+/// <summary>
+/// Defines the identity contract for an entity.
+/// </summary>
+/// <typeparam name="T">Type of the entity identifier.</typeparam>
 public interface IEntity<T> : IEntity
 {
+    /// <summary>
+    /// Unique identifier of the entity.
+    /// </summary>
     public T Id { get; set; }
 }
+
+/// <summary>
+/// Base interface for all domain entities, providing audit properties.
+/// </summary>
 public interface IEntity
 {
     /* Audit (Denetim, İzleme)  Sistemde ne olduğunu tarihsel olarak kaydetme */
+
+    /// <summary>
+    /// Timestamp when the entity was created.
+    /// </summary>
     public DateTime? CreatedAt { get; set; }
+
+    /// <summary>
+    /// User who created the entity.
+    /// </summary>
     public string? CreatedBy { get; set; }
 
+    /// <summary>
+    /// Timestamp when the entity was last modified.
+    /// </summary>
     public DateTime? LastModified { get; set; }
+
+    /// <summary>
+    /// User who last modified the entity.
+    /// </summary>
     public string? LastModifiedBy { get; set ; }
-
-
 }
 /*
  Bu tasarım, farklı türde kimlikler (örneğin, int, Guid, string) kullanmak isteyen varlıkların ihtiyaçlarını karşılar.
