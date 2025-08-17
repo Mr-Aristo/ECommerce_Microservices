@@ -17,6 +17,7 @@ if (app.Environment.IsDevelopment())
 {
     // Auto Migrate
     await app.InitialiseDatabaseAsync();
+    app.UseExceptionHandler("/error");
 }
 
 // Configure the http request pipeline

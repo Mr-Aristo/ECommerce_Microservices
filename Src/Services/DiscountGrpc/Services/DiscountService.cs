@@ -72,3 +72,4 @@ public class DiscountService
         return new DeleteDiscountResponse { Success = true };
     }
 }
+

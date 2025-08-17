@@ -19,7 +19,7 @@ public static class DependecyInjection
     {
         app.MapCarter();
 
-        app.UseExceptionHandler();
+        app.UseExceptionHandler(options => { });
         app.UseHealthChecks("/health",
             new HealthCheckOptions
             {
