@@ -66,7 +66,7 @@ public class Program
         });
 
         //MessageBroker
-        builder.Services.AddMessageBroker(builder.Configuration,assembly);
+        builder.Services.AddMessageBroker(builder.Configuration); // Basket is publisher and no need to send assmebly
 
 
         //HealthCheck
