@@ -17,7 +17,8 @@ public class OrderConfiguration : IEntityTypeConfiguration<Orders>
 
         builder.HasMany(o => o.OrderItems) // One To Many Relation 
             .WithOne()
-            .HasForeignKey(oi => oi.OrderId);
+            .HasForeignKey(oi => oi.OrderId)
+            .OnDelete(DeleteBehavior.Cascade);//Bu, parent (ana) satır silindiğinde bağlı olan child (bağımlı) satırlara ne olacağını belirler.
 
         builder.ComplexProperty(
             o => o.OrderName, nameBuilder =>
@@ -53,7 +54,7 @@ public class OrderConfiguration : IEntityTypeConfiguration<Orders>
                    .HasMaxLength(50);
 
                addressBuilder.Property(a => a.ZipCode)
-                   .HasMaxLength(5)
+                   .HasMaxLength(10)
                    .IsRequired();
            });
 
@@ -82,7 +83,7 @@ public class OrderConfiguration : IEntityTypeConfiguration<Orders>
                   .HasMaxLength(50);
 
               addressBuilder.Property(a => a.ZipCode)
-                  .HasMaxLength(5)
+                  .HasMaxLength(10)
                   .IsRequired();
           });
 

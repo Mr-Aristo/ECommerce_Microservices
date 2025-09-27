@@ -6,7 +6,8 @@
       "serviceActions": {
         "catalogapi": "StartDebugging",
         "discountgrpc": "StartDebugging",
-        "basketapi": "StartDebugging"
+        "basketapi": "StartDebugging",
+        "order.api": "StartDebugging"
       }
     }
   }

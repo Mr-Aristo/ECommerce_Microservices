@@ -32,9 +32,16 @@ services:
   messagebroker:
     image: rabbitmq:management
 
+  order.api:
+    image: ${DOCKER_REGISTRY-}orderapi
+    build:
+      context: .
+      dockerfile: Src/Services/Order/Order.API/Dockerfile
+
 volumes:
   postgres_catalog:
   postgres_basket:
+
 
 
 
