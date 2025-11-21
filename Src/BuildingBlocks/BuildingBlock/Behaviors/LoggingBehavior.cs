@@ -9,22 +9,47 @@ public class LoggingBehavior<TRequest, TResponse>
     {
         logger.LogInformation(
             "[START] Handle request={Request} - Response={Response} - RequestDate={RequestData}",
-             typeof(TRequest).Name, typeof(TResponse).Name, request
-            );
-        var timer =new Stopwatch();
-        timer.Start();
+             typeof(TRequest).Name,
+             typeof(TResponse).Name,
+             request );
 
-        var reponse = await next();
+        var timer = Stopwatch.StartNew();
 
-        var timeTaken = timer.Elapsed;
-        if (timeTaken.Seconds > 3)// if the request is greater than 3 seconds, then log the warnings
-            logger.LogWarning("[PERFORMANCE] The request {Request} took {TimeTaken} seconds.",
-                typeof(TRequest).Name, timeTaken.Seconds
-                );
+        try
+        {
+            var response = await next();
 
-        logger.LogInformation("[END] Handled {Request} with {Response}",
-            typeof(TRequest).Name,typeof(TResponse).Name
-            );
-        return reponse;
+            timer.Stop();
+
+            logger.LogInformation(
+                "Handled {RequestName} in {ElapsedMilliseconds} ms → {@Response}",
+                typeof(TRequest).Name,
+                timer.ElapsedMilliseconds,
+                response);
+
+            if (timer.ElapsedMilliseconds > 3000)// if the request is greater than 3 seconds, then log the warnings
+            {
+                logger.LogWarning(
+                    "[PERFORMANCE] {RequestName} took {ElapsedMilliseconds} ms",
+                    typeof(TResponse).Name,
+                    timer.ElapsedMilliseconds);
+            }
+
+            return response;
+        }
+        catch (Exception ex)
+        {
+
+            timer.Stop();
+
+            logger.LogError(
+                ex,
+                "Error handling {RequestName} after {ElapsedMilliseconds} ms with payload {@Request}",
+                typeof(TRequest).Name,
+                timer.ElapsedMilliseconds,
+                request);
+
+            throw;
+        }
     }
 }
