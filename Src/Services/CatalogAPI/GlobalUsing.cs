@@ -12,3 +12,6 @@ global using BuildingBlock.Behaviors;
 global using BuildingBlock.Exceptions.Handlers;
 global using CatalogAPI.InitialData;
 global using HealthChecks.UI.Client;
+global using Serilog;
+global using Serilog.Events;
+global using Serilog.Formatting.Compact;

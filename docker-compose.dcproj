@@ -15,5 +15,7 @@
     </None>
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
+    <None Include="elk\filebeat\filebeat.docker.yml" />
+    <None Include="elk\logstash\pipeline\logstash.conf" />
   </ItemGroup>
 </Project>
