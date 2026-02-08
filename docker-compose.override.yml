@@ -1,15 +1,15 @@
 services:
+# ----------------- Databases ------------------
   catalogdb:
-    container_name: catalogdb
+    image: postgres:17-alpine
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=CatalogDb
-    restart: always
-    ports:
-      - "5432:5432"
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: CatalogDb
     volumes:
       - postgres_catalog:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
 
   basketdb:
     container_name: basketdb
@@ -38,12 +38,15 @@ services:
     ports:
       - "6379:6379"
 
+# ---------------- Services ---------------------
   catalogapi:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
       - ConnectionStrings__PostgreDataBase=Server=catalogdb;Port=5432;Database=CatalogDb;User Id=postgres;Password=postgres;Include Error Detail=true
+    depends_on: 
+      - catalogdb
     ports:
       - "6000:8080"
       - "6060:8081"

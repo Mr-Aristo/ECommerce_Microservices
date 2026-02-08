@@ -1,18 +1,51 @@
-﻿using Marten;
+﻿using Polly;
+using System.Net.Sockets;
+using Npgsql;
 
 namespace CatalogAPI.InitialData;
 public class CatalogInitialData : IInitialData
 {
     public async Task Populate(IDocumentStore store, CancellationToken cancellation)
     {
-        using var session = store.LightweightSession();
+        var retryPolicy = Policy
+            .Handle<Exception>(ex => IsTransient(ex))
+            .WaitAndRetryAsync(new[]
+            {
+                TimeSpan.FromSeconds(2),
+                TimeSpan.FromSeconds(5),
+                TimeSpan.FromSeconds(10)
+            });
 
-        if (await session.Query<Product>().AnyAsync())
-            return;
+        await retryPolicy.ExecuteAsync(async ct =>
+        {
+            using var session = store.LightweightSession();
 
-        // Marten UPSERT will cater for existing records
-        session.Store<Product>(GetPreconfiguredProducts());
-        await session.SaveChangesAsync();
+            if (await session.Query<Product>().AnyAsync(ct))
+                return;
+
+            // Marten UPSERT will cater for existing records
+            session.Store<Product>(GetPreconfiguredProducts());
+            await session.SaveChangesAsync(ct);
+
+        }, cancellation);
+    }
+
+    private static bool IsTransient(Exception? ex)
+    {
+        if (ex == null) return false;
+
+        // Npgsql low-level connection failures
+        if (ex is NpgsqlException) return true;
+
+        // Socket failures (connection refused, etc.)
+        if (ex is SocketException) return true;
+
+        // Marten wraps lower-level exceptions; check inner exceptions
+        if (ex is Marten.Exceptions.MartenCommandException mce && mce.InnerException != null)
+            return IsTransient(mce.InnerException);
+
+        // Recurse inner exceptions to detect transient causes
+        return ex.InnerException != null && IsTransient(ex.InnerException);
     }
 
     private static IEnumerable<Product> GetPreconfiguredProducts() => new List<Product>()

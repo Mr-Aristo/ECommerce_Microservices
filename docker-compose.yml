@@ -1,15 +1,18 @@
 services:
+# ---------------------- Databases ------------------
   catalogdb:
-    image: postgres
+    image: postgres:17-alpine
 
   basketdb:
-    image: postgres
+    image: postgres:17-alpine
    
   orderdb:
     image: mcr.microsoft.com/mssql/server
 
   distributedcache:
     image: redis
+
+#---------------------- Services ------------------
 
   catalogapi:
     image: ${DOCKER_REGISTRY-}catalogapi

@@ -27,10 +27,15 @@ try
     builder.Services.AddValidatorsFromAssembly(assembly);
     builder.Services.AddCarter();
 
-    builder.Services.AddMarten(options =>
-    {
-        options.Connection(builder.Configuration.GetConnectionString("PostgreDataBase")!);
-    }).UseLightweightSessions();
+    //Serilog host
+    builder.Host.UseSerilog();
+
+    var connString = builder.Configuration.GetConnectionString("PostgreDataBase");
+
+    if (string.IsNullOrWhiteSpace(connString))
+        throw new InvalidOperationException("Postgres connection string is not configured.");
+
+    builder.Services.AddMarten(options => options.Connection(connString)).UseLightweightSessions();
 
     //Data seeding
     if (builder.Environment.IsDevelopment())
