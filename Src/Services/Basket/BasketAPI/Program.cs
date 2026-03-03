@@ -30,22 +30,38 @@ public class Program
         //MinimalAPIs
         builder.Services.AddCarter();
 
-        //DataServices
+        //Marten config
         builder.Services.AddMarten(opts =>
         {
             opts.Connection(builder.Configuration.GetConnectionString("PostgreDataBase")!);// With ! GetConnectionSting cannot be null
             opts.Schema.For<ShoppingCard>().Identity(x => x.UserName);
         });
 
+        //Redis Config
         builder.Services.AddStackExchangeRedisCache(options =>
         {
             options.Configuration = builder.Configuration.GetConnectionString("Redis");
             options.InstanceName = "Basket";
         });
 
-        //Dependency Injection With Scrutor ("Decorator Pattern") library
+ 
+        // Register the concrete `BasketRepository` as the implementation for `IBasketRepository`
+        // with a scoped lifetime (one instance per HTTP request). Scoped lifetime is commonly
+        // chosen for repositories that depend on request-scoped services (e.g., DB sessions).
         builder.Services.AddScoped<IBasketRepository, BasketRepository>();
+        
+        // Apply the `CachedBasketRepository` decorator over `IBasketRepository` using Scrutor's
+        // `Decorate` extension. The decorator wraps the inner `IBasketRepository` implementation
+        // to provide caching behavior (for example, checking/updating Redis cache) without
+        // changing the underlying repository implementation.
+        //
+        // Call order when resolving `IBasketRepository`:
+        // Consumer -> `CachedBasketRepository` (decorator) -> `BasketRepository` (inner)
+        //
+        // Implementation note: the `CachedBasketRepository` must accept an `IBasketRepository`
+        // (the inner/decorated dependency) in its constructor so Scrutor can inject it.
         builder.Services.Decorate<IBasketRepository, CachedBasketRepository>();
+
         builder.Services.AddExceptionHandler<CustomExceptionHandler>();//From BuildingBlock
                                                                        //IBasketRepository calls → CachedBasketRepository runs → Cache check → (if there is no Cache) DB calls and cache updates.
 

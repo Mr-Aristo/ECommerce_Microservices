@@ -3,14 +3,15 @@ syntax = "proto3";
 option csharp_namespace = "DiscountGrpc.Protos";
 
 package discount;
+import "google/protobuf/empty.proto";
 
-// The discount service definition.
+// DiscountProtoService defines the gRPC service for managing discounts (coupons).
 service DiscountProtoService {
-	// Discount CRUD Operations
 	rpc GetDiscount (GetDiscountRequest) returns (CouponModel);
 	rpc CreateDiscount (CreateDiscountRequest) returns (CouponModel);
 	rpc UpdateDiscount (UpdateDiscountRequest) returns (CouponModel);
 	rpc DeleteDiscount (DeleteDiscountRequest) returns (DeleteDiscountResponse);
+	rpc GetAllDiscounts (google.protobuf.Empty) returns (GetAllDiscountsResponse);
 }
 /*
 bos bir fonksiyon icin 
@@ -49,6 +50,11 @@ message DeleteDiscountRequest {
 
 message DeleteDiscountResponse {
 	bool success = 1;
+}
+
+message GetAllDiscountsResponse{
+	// repeated kullanarak birden fazla coupon dondurebiliriz.
+	repeated CouponModel coupons = 1;
 }
 
 //Sagtiklayarek properties den build action ve stup class ayarlarinin yapmalisin.

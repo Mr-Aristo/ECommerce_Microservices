@@ -1,6 +1,7 @@
 ﻿using DiscountGrpc.Data;
 using DiscountGrpc.Models;
 using DiscountGrpc.Protos;
+using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
@@ -70,6 +71,19 @@ public class DiscountService
         logger.LogInformation("Discount is successfully deleted. ProductName : {ProductName}", request.ProductName);
 
         return new DeleteDiscountResponse { Success = true };
+    }
+
+    public override async Task<GetAllDiscountsResponse> GetAllDiscounts(Empty request, ServerCallContext context)
+    {
+        var coupons = await dbContext.Coupons.ToListAsync();
+
+        var response = new GetAllDiscountsResponse();
+
+        // gRPC'de repeated alanlar normal List<T> değil, RepeatedField<T> tipindedir.
+        // Bu yüzden eşitleme (=) yapamayız, AddRange ile içini doldururuz
+        var mappedCoupons = coupons.Adapt<List<CouponModel>>();
+        response.Coupons.AddRange(mappedCoupons);
+        return response;
     }
 }
 
