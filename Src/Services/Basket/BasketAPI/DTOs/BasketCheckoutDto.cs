@@ -2,6 +2,7 @@
 
 public class BasketCheckoutDto
 {
+    // User and Basket Information
     public string UserName { get; set; } = default!;
     public Guid CustomerId { get; set; } = default!;
     public decimal TotalPrice { get; set; } = default!;
@@ -15,7 +16,7 @@ public class BasketCheckoutDto
     public string State { get; set; } = default!;
     public string ZipCode { get; set; } = default!;
 
-    // Payment
+    // Payment Information
     public string CardName { get; set; } = default!;
     public string CardNumber { get; set; } = default!;
     public string Expiration { get; set; } = default!;

@@ -1,7 +1,4 @@
-﻿
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
-
-namespace Order.Application.OrdersCQRS.Commands.UpdateOrder;
+﻿namespace Order.Application.OrdersCQRS.Commands.UpdateOrder;
 
 public class UpdateOrderHandler(IApplicationDbContext dbContext) : ICommandHandler<UpdateOrderCommand, UpdateOrderResult>
 {

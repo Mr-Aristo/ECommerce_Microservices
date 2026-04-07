@@ -30,6 +30,11 @@ public class CatalogInitialData : IInitialData
         }, cancellation);
     }
 
+    /// <summary>
+    ///  The IsTransient method is a helper function that determines whether a given exception is transient and should be retried.
+    ///  It checks for specific types of exceptions that are commonly associated with transient failures, such as NpgsqlException for
+    ///  PostgreSQL connection issues and SocketException for network-related problems. 
+    /// </summary>
     private static bool IsTransient(Exception? ex)
     {
         if (ex == null) return false;
@@ -48,6 +53,11 @@ public class CatalogInitialData : IInitialData
         return ex.InnerException != null && IsTransient(ex.InnerException);
     }
 
+    /// <summary>
+    /// The GetPreconfiguredProducts method returns a predefined list of Product objects that can be used to populate the database with initial data. 
+    /// Each Product has properties such as Id, Name, Description, ImageFile, Price, and Category.
+    ///  This method is used during the initial data seeding process to ensure that the application has
+    /// </summary>
     private static IEnumerable<Product> GetPreconfiguredProducts() => new List<Product>()
             {
                 new Product()
@@ -115,4 +125,3 @@ public class CatalogInitialData : IInitialData
                 }
             };
 }
-

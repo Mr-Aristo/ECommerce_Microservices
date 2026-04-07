@@ -3,6 +3,7 @@
 //public record DeleteBasketRequest(string UserName);
 public record DeleteBasketResponse(bool IsSuccess);
 
+
 public class DeleteBasketEndpoints : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)

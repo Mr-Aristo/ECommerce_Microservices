@@ -2,6 +2,11 @@
 
 namespace BasketAPI.Data;
 
+/// <summary>
+/// The CachedBasketRepository class is a decorator for the IBasketRepository interface that adds caching functionality using IDistributedCache. 
+/// It retrieves shopping baskets from the cache if available, and falls back to the underlying repository if not.
+/// When storing or deleting a basket, it ensures that the cache is updated accordingly. 
+/// </summary>
 public class CachedBasketRepository(IBasketRepository repository, IDistributedCache cache) : IBasketRepository
 {
     public async Task<ShoppingCard> GetBasket(string userName, CancellationToken cancellationToken = default)

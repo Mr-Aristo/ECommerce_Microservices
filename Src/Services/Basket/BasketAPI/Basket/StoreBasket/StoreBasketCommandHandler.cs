@@ -1,8 +1,8 @@
-﻿//using Discount.Grpc;
-using DiscountGrpc.Protos;
+﻿using DiscountGrpc.Protos;
 
 namespace BasketAPI.Basket.StoreBasket;
 
+//TODO:Check the correctness of this grpc module logic. 
 
 public record StoreBasketCommand(ShoppingCard Cart) : ICommand<StoreBasketResult>;
 public record StoreBasketResult(string UserName);

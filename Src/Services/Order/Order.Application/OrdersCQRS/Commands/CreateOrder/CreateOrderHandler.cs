@@ -51,5 +51,4 @@ public class CreateOrderHandler(IApplicationDbContext dbcontext) : ICommandHandl
 
         return newOrder;
     }
-
 }

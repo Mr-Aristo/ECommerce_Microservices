@@ -1,4 +1,10 @@
 ﻿namespace Order.Application.Extentions;
+
+/// <summary>
+/// Provides extension methods for converting order entities to DTOs.
+/// The OrderExtension class contains methods to convert Orders entities to OrderDto objects, 
+/// which are used for data transfer between layers of the application.
+/// </summary>
 public static class OrderExtension
 {
     public static IEnumerable<OrderDto> ToOrderDtoList(this IEnumerable<Orders> orders)

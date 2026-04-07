@@ -1,6 +1,9 @@
 ﻿
 namespace Order.Application.Data;
 
+/// <summary>
+/// The IApplicationDbContext interface defines the contract for the application's database context.
+/// </summary>
 public interface IApplicationDbContext
 {
     DbSet<Customer> Customers { get; }
@@ -9,5 +12,4 @@ public interface IApplicationDbContext
     DbSet<OrderItem> OrdersItems { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
-
 }

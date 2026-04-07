@@ -14,6 +14,7 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 app.UseMigration();
+// Map the gRPC service to the application's request pipeline, allowing it to handle incoming gRPC requests.
 app.MapGrpcService<DiscountService>();
 
 app.Run();

@@ -1,11 +1,10 @@
 ﻿namespace BasketAPI.Basket.DeleteBasket;
 
-/** Records **/
+// Request and Response DTOs
 public record DeleteBasketCommand(string UserName) : ICommand<DeleteBasketResult>;
 public record DeleteBasketResult(bool IsSuccess);
-/*************/
 
-/** Validation Logic **/
+// FluentValidation
 public class DeleteBasketCommandValidator : AbstractValidator<DeleteBasketCommand>
 {
     public DeleteBasketCommandValidator()
@@ -13,7 +12,6 @@ public class DeleteBasketCommandValidator : AbstractValidator<DeleteBasketComman
         RuleFor(x => x.UserName).NotEmpty().WithMessage("UserName is required");
     }
 }
-/**********************/
 
 public class DeleteBasketCommandHandler(IBasketRepository repository)
     : ICommandHandler<DeleteBasketCommand, DeleteBasketResult>
