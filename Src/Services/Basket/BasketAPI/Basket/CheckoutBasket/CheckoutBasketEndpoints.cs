@@ -1,11 +1,9 @@
-﻿using BasketAPI.Basket.CheckoutBasket;
+﻿namespace BasketAPI.Basket.CheckoutBasket;
 
-namespace Basket.API.Basket.CheckoutBasket;
-
-/** Records **/
+// Records for API Endpoints
 public record CheckoutBasketRequest(BasketCheckoutDto BasketCheckoutDto);
 public record CheckoutBasketResponse(bool IsSuccess);
-/************/
+
 
 public class CheckoutBasketEndpoints : ICarterModule
 {

@@ -2,6 +2,14 @@
 
 namespace BasketAPI.Data;
 
+/// <summary>
+/// Implements the IBasketRepository interface using Marten as the underlying data access technology. 
+/// This repository provides methods to get, store, and delete shopping baskets for users. 
+/// It interacts with a document session to perform CRUD operations on the ShoppingCard documents in the database. 
+/// The GetBasket method retrieves a basket by user name and throws a BasketNotFoundException if no basket is found. 
+/// The StoreBasket method saves a given ShoppingCard to the database, while the DeleteBasket method removes a basket associated 
+/// with a specific user name.
+/// </summary>
 public class BasketRepository(IDocumentSession session) : IBasketRepository
 {
     public async Task<ShoppingCard> GetBasket(string userName, CancellationToken cancellationToken = default)

@@ -1,14 +1,10 @@
-﻿using System.Text;
-
-namespace Order.Application.Services;
+﻿namespace Order.Application.Services;
 
 public static class RandomCodeGenerator
 {
     /// <summary>
-    /// Generates Trace Code
+    /// Generates Trace Code 
     /// </summary>
-    /// <param name="lenght"></param>
-    /// <returns></returns>
     public static string GenerateCode(int length)
     {
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -21,5 +17,4 @@ public static class RandomCodeGenerator
         return result.ToString();
 
     }
-
 }

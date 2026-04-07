@@ -2,12 +2,21 @@
 using BuildingBlockMessaging.Events;
 using MassTransit;
 using Order.Application.OrdersCQRS.Commands.CreateOrder;
-
-
 namespace Order.Application.OrdersCQRS.EventHandlers.Integration;
 
+/// <summary>
+/// The BasketCheckoutEventHandler class is responsible for handling the BasketCheckoutEvent integration event.
+/// When a BasketCheckoutEvent is received, this handler processes the event by mapping it to a CreateOrderCommand 
+/// and sending it to the appropriate command handler using the ISender interface. 
+/// It also logs the handling of the integration event for monitoring and debugging purposes. 
+/// The MapToCreateOrderCommand method is used to convert the incoming BasketCheckoutEvent data into a CreateOrderCommand, which contains all
+/// the necessary information to create a new order in the system based on the data received from the basket checkout process.
+/// </summary>
 public class BasketCheckoutEventHandler(ISender sender, ILogger<BasketCheckoutEventHandler> logger) : IConsumer<BasketCheckoutEvent>
 {
+    /// <summary>
+    /// Consumes the BasketCheckoutEvent, processes it by mapping to a CreateOrderCommand, and sends the command for further handling.
+    /// </summary>
     public async Task Consume(ConsumeContext<BasketCheckoutEvent> context)
     {
         logger.LogInformation("Integration event handled:{IntegrationEvent}", context.Message.GetType().Name);

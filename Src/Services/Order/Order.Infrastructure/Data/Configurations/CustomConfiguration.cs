@@ -1,8 +1,8 @@
-﻿
-using Order.Domain.ValueObjects;
+﻿namespace Order.Infrastructure.Data.Configurations;
 
-namespace Order.Infrastructure.Data.Configurations;
-
+/// <summary>
+/// The CustomConfiguration class is responsible for configuring the Customer entity in the database context.
+/// </summary>
 public class CustomConfiguration : IEntityTypeConfiguration<Customer>
 {
     public void Configure(EntityTypeBuilder<Customer> builder)

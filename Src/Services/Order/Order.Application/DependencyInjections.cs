@@ -12,7 +12,6 @@ public static class DependencyInjections
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection service, IConfiguration configuration)
     {
-
         service.AddMediatR(config =>
         {
             config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
@@ -20,7 +19,8 @@ public static class DependencyInjections
             config.AddOpenBehavior(typeof(LoggingBehavior<,>));
         });
 
-        service.AddFeatureManagement();
+        service.AddFeatureManagement(); 
+        // MassTransit Configuration for message brokering, using the current assembly for consumer registration
         service.AddMessageBroker(configuration,Assembly.GetExecutingAssembly());
 
         return service;

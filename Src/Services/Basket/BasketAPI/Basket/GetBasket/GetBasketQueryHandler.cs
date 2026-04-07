@@ -1,9 +1,9 @@
 ﻿namespace BasketAPI.Basket.GetBasket;
 
-/** Records **/
+// Request and Response DTOs
 public record GetBasketQuery(string UserName) : IQuery<GetBasketResult>;
 public record GetBasketResult(ShoppingCard Cart);
-/************/
+
 
 public class GetBasketQueryHandler(IBasketRepository repository)
     : IQueryHandler<GetBasketQuery, GetBasketResult>

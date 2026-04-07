@@ -1,5 +1,8 @@
 ﻿namespace Order.Infrastructure.Data.Configurations;
 
+/// <summary>
+/// The OrderConfiguration class is responsible for configuring the Orders entity in the database context.
+/// </summary>
 public class OrderConfiguration : IEntityTypeConfiguration<Orders>
 {
     public void Configure(EntityTypeBuilder<Orders> builder)

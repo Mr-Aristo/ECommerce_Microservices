@@ -3,12 +3,11 @@ using MassTransit;
 
 namespace BasketAPI.Basket.CheckoutBasket;
 
-/** Records **/
+// Command & Handler Records
 public record CheckoutBasketCommand(BasketCheckoutDto BasketCheckoutDto) : ICommand<CheckoutBasketResult>;
 public record CheckoutBasketResult(bool IsSuccess);
-/***********/
-
-/** Checkout Validation **/
+    
+//FluentValidation
 public abstract class CheckoutBasketCommandValidator : AbstractValidator<CheckoutBasketCommand> //FluentValidation
 {
 	public CheckoutBasketCommandValidator()
@@ -16,16 +15,15 @@ public abstract class CheckoutBasketCommandValidator : AbstractValidator<Checkou
         //x."variableName" must be the same as AbstractValidator<"Type's parameters name which is CheckoutBasketCommand">
         RuleFor(x => x.BasketCheckoutDto).NotNull().WithMessage("BasketCheckoutDto cannot be null.");
 
-		RuleFor(x => x.BasketCheckoutDto.UserName).NotEmpty().WithMessage("UserName is required.");
+        RuleFor(x => x.BasketCheckoutDto.UserName).NotEmpty().WithMessage("UserName is required.");
 	}
 }
-/*************************/
 
 public class CheckoutBasketHandler(IBasketRepository repository , IPublishEndpoint publishEndpoint) : ICommandHandler<CheckoutBasketCommand, CheckoutBasketResult>
 {
     public async Task<CheckoutBasketResult> Handle(CheckoutBasketCommand command, CancellationToken cancellationToken)
     {
-        var basket = await repository.GetBasket(command.BasketCheckoutDto.FirstName, cancellationToken);
+        var basket = await repository.GetBasket(command.BasketCheckoutDto.UserName, cancellationToken);
 
         if (basket is null)
         {

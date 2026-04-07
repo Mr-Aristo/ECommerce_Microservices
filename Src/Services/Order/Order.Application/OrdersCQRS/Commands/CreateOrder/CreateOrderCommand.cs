@@ -4,7 +4,9 @@
 public record CreateOrderCommand(OrderDto Order): ICommand<CreateOrderResult>;
 public record CreateOrderResult(Guid id);
 
-
+/// <summary>
+/// The CreateOrderCommandValidator class is responsible for validating the CreateOrderCommand.
+/// </summary>
 public class CreateOrderCommandValidator : AbstractValidator<CreateOrderCommand>
 {
 	public CreateOrderCommandValidator()

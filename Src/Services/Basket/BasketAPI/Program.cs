@@ -20,11 +20,11 @@ public class Program
         builder.Services.AddMediatR(config =>
         {
             config.RegisterServicesFromAssembly(assembly);
-            config.AddOpenBehavior(typeof(ValidationBehavior<,>));//<,> MediatR Open Generics
+            config.AddOpenBehavior(typeof(ValidationBehavior<,>));//<,> MediatR Open Generics 
             config.AddOpenBehavior(typeof(LoggingBehavior<,>));
         });
 
-        // Add services to the container.
+        //Grpc Config
         builder.Services.AddGrpc();
 
         //MinimalAPIs
