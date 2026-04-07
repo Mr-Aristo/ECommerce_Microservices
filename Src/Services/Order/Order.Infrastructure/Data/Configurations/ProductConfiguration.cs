@@ -1,9 +1,8 @@
-﻿
+﻿namespace Order.Infrastructure.Data.Configurations;
 
-using Order.Domain.ValueObjects;
-
-namespace Order.Infrastructure.Data.Configurations;
-
+/// <summary>
+/// The ProductConfiguration class is responsible for configuring the Product entity in the database context.
+/// </summary>
 public class ProductConfiguration : IEntityTypeConfiguration<Product>
 {
     public void Configure(EntityTypeBuilder<Product> builder)

@@ -18,6 +18,7 @@ public static class DependencyInjections
             config.AddOpenBehavior(typeof(ValidationBehavior<,>));
             config.AddOpenBehavior(typeof(LoggingBehavior<,>));
         });
+        service.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
         service.AddFeatureManagement(); 
         // MassTransit Configuration for message brokering, using the current assembly for consumer registration

@@ -23,6 +23,7 @@ public class Program
             config.AddOpenBehavior(typeof(ValidationBehavior<,>));//<,> MediatR Open Generics 
             config.AddOpenBehavior(typeof(LoggingBehavior<,>));
         });
+        builder.Services.AddValidatorsFromAssembly(assembly);
 
         //Grpc Config
         builder.Services.AddGrpc();
@@ -72,13 +73,16 @@ public class Program
         })
          .ConfigurePrimaryHttpMessageHandler(() =>
         {
-            var handler = new HttpClientHandler
+            if (builder.Environment.IsDevelopment())
             {
-                ServerCertificateCustomValidationCallback =
-                HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-            };
+                return new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback =
+                        HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                };
+            }
 
-            return handler;
+            return new HttpClientHandler();
         });
 
         //MessageBroker

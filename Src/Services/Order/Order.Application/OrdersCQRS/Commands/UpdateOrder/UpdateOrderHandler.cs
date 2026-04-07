@@ -1,4 +1,6 @@
-﻿namespace Order.Application.OrdersCQRS.Commands.UpdateOrder;
+﻿using Order.Application.Security;
+
+namespace Order.Application.OrdersCQRS.Commands.UpdateOrder;
 
 public class UpdateOrderHandler(IApplicationDbContext dbContext) : ICommandHandler<UpdateOrderCommand, UpdateOrderResult>
 {
@@ -41,9 +43,9 @@ public class UpdateOrderHandler(IApplicationDbContext dbContext) : ICommandHandl
 
         var updatedPayment = Payment.Of(
             orderDto.Payment.CardName,
-            orderDto.Payment.CardNumber,
+            PaymentDataSanitizer.MaskCardNumber(orderDto.Payment.CardNumber),
             orderDto.Payment.Expiration,
-            orderDto.Payment.Cvv,
+            PaymentDataSanitizer.RedactCvv(),
             orderDto.Payment.PaymentMethod);
 
         order.Update(
