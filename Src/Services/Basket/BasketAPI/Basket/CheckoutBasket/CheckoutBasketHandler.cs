@@ -5,6 +5,9 @@ using BasketAPI.Exceptions;
 
 namespace BasketAPI.Basket.CheckoutBasket;
 
+//Todo: db and cache must be atomic
+//need to ad concurrency secure, code must be idempotent, because of retry and possible duplicates.
+
 // Command & Handler Records
 public record CheckoutBasketCommand(BasketCheckoutDto BasketCheckoutDto) : ICommand<CheckoutBasketResult>;
 public record CheckoutBasketResult(bool IsSuccess);

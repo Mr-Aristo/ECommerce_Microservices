@@ -11,6 +11,10 @@ public class BasketCheckoutOutboxDispatcher(
     private const int BatchSize = 20;
     private const int MaxRetryCount = 10;
 
+    /// <summary>
+    /// This function works till app is closed
+    /// "stoppingToken" gets true while app is closing, so we can use it to stop the function gracefully.
+    /// </summary>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
