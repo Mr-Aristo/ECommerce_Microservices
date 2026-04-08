@@ -1,43 +1,46 @@
 using BasketAPI.Basket.CheckoutBasket;
-using BasketAPI.Data.Abstracts;
 using BasketAPI.DTOs;
+using BasketAPI.Exceptions;
 using BasketAPI.Models;
 using BuildingBlock.Exceptions;
 using BuildingBlockMessaging.Events;
-using MassTransit;
+using Marten;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace ECommerce_Tests.Basket;
 
 public class CheckoutBasketHandlerTests
 {
     [Fact]
-    public async Task Handle_ShouldUseUserNameAndPublishEvent_AndDeleteBasket()
+    public async Task Handle_ShouldMarkBasketPending_AndStoreOutboxMessage()
     {
         // Arrange
-        var repository = new Mock<IBasketRepository>();
-        var publishEndpoint = new Mock<IPublishEndpoint>();
-        var sut = new CheckoutBasketHandler(repository.Object, publishEndpoint.Object);
+        var session = new Mock<IDocumentSession>();
+        var cache = new Mock<IDistributedCache>();
+        var sut = new CheckoutBasketHandler(session.Object, cache.Object);
 
         var dto = new BasketCheckoutDto
         {
             UserName = "checkout-user",
-            FirstName = "different-first-name",
+            FirstName = "Jane",
             LastName = "Doe",
             EmailAddress = "user@test.com",
             AddressLine = "Somewhere",
             Country = "TR",
             State = "IST",
             ZipCode = "34000",
-            CardName = "checkout-user",
-            CardNumber = "4111111111111111",
-            Expiration = "12/30",
-            CVV = "123",
+            CardName = "Jane Doe",
+            PaymentToken = "tok_abc_123",
+            PaymentReference = "pi_123",
+            CardLast4 = "1111",
+            CardBrand = "VISA",
             PaymentMethod = 1,
             CustomerId = Guid.NewGuid()
         };
 
         var basket = new ShoppingCard(dto.UserName)
         {
+            Status = BasketStatus.Active,
             Items =
             [
                 new ShoppingCardItem
@@ -51,14 +54,11 @@ public class CheckoutBasketHandlerTests
             ]
         };
 
-        repository
-            .Setup(r => r.GetBasket(dto.UserName, It.IsAny<CancellationToken>()))
+        session
+            .Setup(s => s.LoadAsync<ShoppingCard>(dto.UserName, It.IsAny<CancellationToken>()))
             .ReturnsAsync(basket);
-        repository
-            .Setup(r => r.DeleteBasket(dto.UserName, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
-        publishEndpoint
-            .Setup(p => p.Publish(It.IsAny<BasketCheckoutEvent>(), It.IsAny<CancellationToken>()))
+        session
+            .Setup(s => s.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -66,22 +66,35 @@ public class CheckoutBasketHandlerTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        repository.Verify(r => r.GetBasket(dto.UserName, It.IsAny<CancellationToken>()), Times.Once);
-        repository.Verify(r => r.GetBasket(dto.FirstName, It.IsAny<CancellationToken>()), Times.Never);
-        repository.Verify(r => r.DeleteBasket(dto.UserName, It.IsAny<CancellationToken>()), Times.Once);
-        publishEndpoint.Verify(
-            p => p.Publish(
-                It.Is<BasketCheckoutEvent>(e =>
-                    e.UserName == dto.UserName &&
-                    e.TotalPrice == basket.TotalPrice &&
-                    e.CardNumber == "**** **** **** 1111" &&
-                    e.CardNumber != dto.CardNumber &&
-                    e.CVV == "***" &&
-                    e.CVV != dto.CVV &&
-                    e.Items.Count == 1 &&
-                    e.Items[0].ProductId == basket.Items[0].ProductId &&
-                    e.Items[0].Quantity == basket.Items[0].Quantity &&
-                    e.Items[0].Price == basket.Items[0].Price),
+        Assert.Equal(BasketStatus.CheckoutPending, basket.Status);
+        Assert.NotNull(basket.PendingCheckoutId);
+
+        session.Verify(
+            s => s.Store(It.Is<ShoppingCard>(b =>
+                b.UserName == dto.UserName &&
+                b.Status == BasketStatus.CheckoutPending &&
+                b.PendingCheckoutId.HasValue)),
+            Times.Once);
+
+        session.Verify(
+            s => s.Store(It.Is<BasketCheckoutOutboxMessage>(m =>
+                m.UserName == dto.UserName &&
+                m.CheckoutId == basket.PendingCheckoutId &&
+                m.Status == CheckoutOutboxStatus.Pending &&
+                m.Payload.UserName == dto.UserName &&
+                m.Payload.PaymentToken == dto.PaymentToken &&
+                m.Payload.PaymentReference == dto.PaymentReference &&
+                m.Payload.CardLast4 == dto.CardLast4 &&
+                m.Payload.CardBrand == dto.CardBrand &&
+                m.Payload.Items.Count == 1)),
+            Times.Once);
+
+        session.Verify(s => s.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        cache.Verify(
+            c => c.SetAsync(
+                dto.UserName,
+                It.IsAny<byte[]>(),
+                It.IsAny<DistributedCacheEntryOptions>(),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -90,9 +103,9 @@ public class CheckoutBasketHandlerTests
     public async Task Handle_ShouldThrowBadRequest_WhenBasketIsEmpty()
     {
         // Arrange
-        var repository = new Mock<IBasketRepository>();
-        var publishEndpoint = new Mock<IPublishEndpoint>();
-        var sut = new CheckoutBasketHandler(repository.Object, publishEndpoint.Object);
+        var session = new Mock<IDocumentSession>();
+        var cache = new Mock<IDistributedCache>();
+        var sut = new CheckoutBasketHandler(session.Object, cache.Object);
 
         var dto = new BasketCheckoutDto
         {
@@ -105,28 +118,116 @@ public class CheckoutBasketHandlerTests
             State = "IST",
             ZipCode = "34000",
             CardName = "John Doe",
-            CardNumber = "4111111111111111",
-            Expiration = "12/30",
-            CVV = "123",
+            PaymentToken = "tok_abc_123",
+            PaymentReference = "pi_123",
+            CardLast4 = "1111",
+            CardBrand = "VISA",
             PaymentMethod = 1,
             CustomerId = Guid.NewGuid()
         };
 
-        var emptyBasket = new ShoppingCard(dto.UserName) { Items = [] };
-
-        repository
-            .Setup(r => r.GetBasket(dto.UserName, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(emptyBasket);
+        session
+            .Setup(s => s.LoadAsync<ShoppingCard>(dto.UserName, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ShoppingCard(dto.UserName) { Items = [] });
 
         // Act + Assert
         await Assert.ThrowsAsync<BadRequestException>(() =>
             sut.Handle(new CheckoutBasketCommand(dto), CancellationToken.None));
 
-        publishEndpoint.Verify(
-            p => p.Publish(It.IsAny<BasketCheckoutEvent>(), It.IsAny<CancellationToken>()),
+        session.Verify(s => s.Store(It.IsAny<ShoppingCard>()), Times.Never);
+        session.Verify(s => s.Store(It.IsAny<BasketCheckoutOutboxMessage>()), Times.Never);
+        session.Verify(s => s.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        cache.Verify(
+            c => c.SetAsync(It.IsAny<string>(), It.IsAny<byte[]>(), It.IsAny<DistributedCacheEntryOptions>(), It.IsAny<CancellationToken>()),
             Times.Never);
-        repository.Verify(
-            r => r.DeleteBasket(It.IsAny<string>(), It.IsAny<CancellationToken>()),
-            Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldThrowBadRequest_WhenCheckoutAlreadyPending()
+    {
+        // Arrange
+        var session = new Mock<IDocumentSession>();
+        var cache = new Mock<IDistributedCache>();
+        var sut = new CheckoutBasketHandler(session.Object, cache.Object);
+
+        var dto = new BasketCheckoutDto
+        {
+            UserName = "checkout-user",
+            FirstName = "John",
+            LastName = "Doe",
+            EmailAddress = "user@test.com",
+            AddressLine = "Somewhere",
+            Country = "TR",
+            State = "IST",
+            ZipCode = "34000",
+            CardName = "John Doe",
+            PaymentToken = "tok_abc_123",
+            PaymentReference = "pi_123",
+            CardLast4 = "1111",
+            CardBrand = "VISA",
+            PaymentMethod = 1,
+            CustomerId = Guid.NewGuid()
+        };
+
+        session
+            .Setup(s => s.LoadAsync<ShoppingCard>(dto.UserName, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ShoppingCard(dto.UserName)
+            {
+                Status = BasketStatus.CheckoutPending,
+                PendingCheckoutId = Guid.NewGuid(),
+                Items =
+                [
+                    new ShoppingCardItem
+                    {
+                        ProductId = Guid.NewGuid(),
+                        ProductName = "Item-1",
+                        Quantity = 1,
+                        Price = 100
+                    }
+                ]
+            });
+
+        // Act + Assert
+        await Assert.ThrowsAsync<BadRequestException>(() =>
+            sut.Handle(new CheckoutBasketCommand(dto), CancellationToken.None));
+
+        session.Verify(s => s.Store(It.IsAny<ShoppingCard>()), Times.Never);
+        session.Verify(s => s.Store(It.IsAny<BasketCheckoutOutboxMessage>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldThrowBasketNotFound_WhenBasketDoesNotExist()
+    {
+        // Arrange
+        var session = new Mock<IDocumentSession>();
+        var cache = new Mock<IDistributedCache>();
+        var sut = new CheckoutBasketHandler(session.Object, cache.Object);
+
+        var dto = new BasketCheckoutDto
+        {
+            UserName = "checkout-user",
+            FirstName = "John",
+            LastName = "Doe",
+            EmailAddress = "user@test.com",
+            AddressLine = "Somewhere",
+            Country = "TR",
+            State = "IST",
+            ZipCode = "34000",
+            CardName = "John Doe",
+            PaymentToken = "tok_abc_123",
+            PaymentReference = "pi_123",
+            CardLast4 = "1111",
+            CardBrand = "VISA",
+            PaymentMethod = 1,
+            CustomerId = Guid.NewGuid()
+        };
+
+        session
+            .Setup(s => s.LoadAsync<ShoppingCard>(dto.UserName, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ShoppingCard?)null);
+
+        // Act + Assert
+        await Assert.ThrowsAsync<BasketNotFoundException>(() =>
+            sut.Handle(new CheckoutBasketCommand(dto), CancellationToken.None));
     }
 }

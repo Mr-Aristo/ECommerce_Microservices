@@ -71,10 +71,60 @@ public class CreateOrderHandlerTests
         Assert.Equal(1, await dbContext.Orders.CountAsync());
     }
 
+    [Fact]
+    public async Task Handle_ShouldReturnExistingOrder_WhenSameOrderIdIsReceivedAgain()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase($"create-order-idempotent-{Guid.NewGuid()}")
+            .Options;
+
+        await using var dbContext = new ApplicationDbContext(options);
+
+        var existingOrderId = Guid.NewGuid();
+        var customerId = Guid.NewGuid();
+        var productId = Guid.NewGuid();
+
+        dbContext.Customers.Add(Customer.Create(CustomerId.Of(customerId), "Jane Doe", "jane@doe.com"));
+        dbContext.Products.Add(Product.Create(ProductId.Of(productId), "Existing Product", 120));
+
+        var shippingAddress = Address.Of("Jane", "Doe", "jane@doe.com", "Main Street", "TR", "IST", "34000");
+        var billingAddress = Address.Of("Jane", "Doe", "jane@doe.com", "Main Street", "TR", "IST", "34000");
+        var payment = Payment.Of("Jane Doe", "tok_existing", "pi_existing", "123", 1);
+
+        var existingOrder = Orders.Create(
+            OrderId.Of(existingOrderId),
+            CustomerId.Of(customerId),
+            OrderName.Of("ORD_EXISTING"),
+            shippingAddress,
+            billingAddress,
+            payment);
+        existingOrder.Add(ProductId.Of(productId), 1, 120);
+
+        dbContext.Orders.Add(existingOrder);
+        await dbContext.SaveChangesAsync(CancellationToken.None);
+
+        var sut = new CreateOrderHandler(dbContext);
+        var command = new CreateOrderCommand(CreateOrder(existingOrderId, customerId, productId, 120));
+
+        // Act
+        var result = await sut.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(existingOrderId, result.id);
+        Assert.Equal(1, await dbContext.Orders.CountAsync());
+        Assert.Equal(1, await dbContext.OrdersItems.CountAsync());
+    }
+
     private static OrderDto CreateOrder(Guid customerId, Guid productId, decimal price)
     {
+        return CreateOrder(Guid.NewGuid(), customerId, productId, price);
+    }
+
+    private static OrderDto CreateOrder(Guid orderId, Guid customerId, Guid productId, decimal price)
+    {
         return new OrderDto(
-            Id: Guid.NewGuid(),
+            Id: orderId,
             CustomerId: customerId,
             OrderName: "ORD_TEST",
             ShippingAddress: new AddressDto("Jane", "Doe", "jane@doe.com", "Main Street", "TR", "IST", "34000"),

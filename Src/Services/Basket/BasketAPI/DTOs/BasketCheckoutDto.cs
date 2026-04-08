@@ -16,10 +16,11 @@ public class BasketCheckoutDto
     public string State { get; set; } = default!;
     public string ZipCode { get; set; } = default!;
 
-    // Payment Information
+    // Tokenized Payment Information
     public string CardName { get; set; } = default!;
-    public string CardNumber { get; set; } = default!;
-    public string Expiration { get; set; } = default!;
-    public string CVV { get; set; } = default!;
+    public string PaymentToken { get; set; } = default!;
+    public string PaymentReference { get; set; } = default!;
+    public string CardLast4 { get; set; } = default!;
+    public string CardBrand { get; set; } = default!;
     public int PaymentMethod { get; set; } = default!;
 }

@@ -8,14 +8,24 @@ public class PaymentDataSanitizerTests
     [InlineData("4111111111111111", "**** **** **** 1111")]
     [InlineData("**** **** **** 4242", "**** **** **** 4242")]
     [InlineData("123", "****")]
-    [InlineData("abcd", "****")]
-    public void MaskCardNumber_ShouldReturnExpectedMask(string input, string expected)
+    [InlineData("tok_abc_123", "tok_abc_123")]
+    public void NormalizePaymentToken_ShouldReturnExpectedValue(string input, string expected)
     {
         // Act
-        var result = PaymentDataSanitizer.MaskCardNumber(input);
+        var result = PaymentDataSanitizer.NormalizePaymentToken(input);
 
         // Assert
         Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void MaskCardNumber_ShouldUseNormalizePaymentTokenForBackwardCompatibility()
+    {
+        // Act
+        var result = PaymentDataSanitizer.MaskCardNumber("tok_legacy_123");
+
+        // Assert
+        Assert.Equal("tok_legacy_123", result);
     }
 
     [Fact]

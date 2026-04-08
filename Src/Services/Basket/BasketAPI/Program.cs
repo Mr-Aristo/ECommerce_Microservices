@@ -1,4 +1,5 @@
-﻿using BuildingBlock.Exceptions.Handlers;
+﻿using BasketAPI.CheckoutSaga;
+using BuildingBlock.Exceptions.Handlers;
 using DiscountGrpc.Protos;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -36,6 +37,8 @@ public class Program
         {
             opts.Connection(builder.Configuration.GetConnectionString("PostgreDataBase")!);// With ! GetConnectionSting cannot be null
             opts.Schema.For<ShoppingCard>().Identity(x => x.UserName);
+            // OUTBOX/SAGA: local outbox document schema for checkout integration events.
+            opts.Schema.For<BasketCheckoutOutboxMessage>().Identity(x => x.Id);
         });
 
         //Redis Config
@@ -86,7 +89,10 @@ public class Program
         });
 
         //MessageBroker
-        builder.Services.AddMessageBroker(builder.Configuration); // Basket is publisher and no need to send assmebly
+        // OUTBOX/SAGA: register consumers (success/fail) from this assembly.
+        builder.Services.AddMessageBroker(builder.Configuration, assembly);
+        // OUTBOX/SAGA: background worker that publishes pending outbox records.
+        builder.Services.AddHostedService<BasketCheckoutOutboxDispatcher>();
 
 
         //HealthCheck
