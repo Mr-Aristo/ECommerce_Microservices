@@ -43,7 +43,7 @@ public class UpdateOrderHandler(IApplicationDbContext dbContext) : ICommandHandl
 
         var updatedPayment = Payment.Of(
             orderDto.Payment.CardName,
-            PaymentDataSanitizer.MaskCardNumber(orderDto.Payment.CardNumber),
+            PaymentDataSanitizer.NormalizePaymentToken(orderDto.Payment.CardNumber),
             orderDto.Payment.Expiration,
             PaymentDataSanitizer.RedactCvv(),
             orderDto.Payment.PaymentMethod);

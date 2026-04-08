@@ -5,6 +5,13 @@ public class CreateOrderHandler(IApplicationDbContext dbcontext) : ICommandHandl
 {
     public async Task<CreateOrderResult> Handle(CreateOrderCommand command, CancellationToken cancellationToken)
     {
+        var orderId = OrderId.Of(command.Order.Id);
+        var existingOrder = await dbcontext.Orders.FindAsync([orderId], cancellationToken);
+        if (existingOrder is not null)
+        {
+            return new CreateOrderResult(existingOrder.Id.Value);
+        }
+
         await EnsureReferenceDataExistsAsync(command.Order, cancellationToken);
 
         var order = CreateNewOrder(command.Order);
@@ -35,14 +42,14 @@ public class CreateOrderHandler(IApplicationDbContext dbcontext) : ICommandHandl
             orderDto.BillingAddress.ZipCode);
 
         var newOrder = Orders.Create(
-                id: OrderId.Of(Guid.NewGuid()),
+                id: OrderId.Of(orderDto.Id),
                 customerId: CustomerId.Of(orderDto.CustomerId),
                 orderName: OrderName.Of(orderDto.OrderName),
                 shippingAddress: shippingAddress,
                 billingAddress: billingAddress,
                 payment: Payment.Of(
                     orderDto.Payment.CardName,
-                    PaymentDataSanitizer.MaskCardNumber(orderDto.Payment.CardNumber),
+                    PaymentDataSanitizer.NormalizePaymentToken(orderDto.Payment.CardNumber),
                     orderDto.Payment.Expiration,
                     PaymentDataSanitizer.RedactCvv(),
                     orderDto.Payment.PaymentMethod)

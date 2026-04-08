@@ -16,6 +16,10 @@
 
         public List<ShoppingCardItem> Items { get; set; } = new();
 
+        public BasketStatus Status { get; set; } = BasketStatus.Active;
+
+        public Guid? PendingCheckoutId { get; set; }
+
         public decimal TotalPrice => Items.Sum(x => x.Price * x.Quantity);
 
         public ShoppingCard(string userName)

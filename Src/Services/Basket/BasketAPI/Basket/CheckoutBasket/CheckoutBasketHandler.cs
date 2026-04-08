@@ -1,6 +1,7 @@
 ﻿using BuildingBlock.Exceptions;
 using BuildingBlockMessaging.Events;
-using MassTransit;
+using Microsoft.Extensions.Caching.Distributed;
+using BasketAPI.Exceptions;
 
 namespace BasketAPI.Basket.CheckoutBasket;
 
@@ -20,27 +21,37 @@ public class CheckoutBasketCommandValidator : AbstractValidator<CheckoutBasketCo
         RuleFor(x => x.BasketCheckoutDto.EmailAddress).NotEmpty().WithMessage("EmailAddress is required.");
         RuleFor(x => x.BasketCheckoutDto.AddressLine).NotEmpty().WithMessage("AddressLine is required.");
         RuleFor(x => x.BasketCheckoutDto.CardName).NotEmpty().WithMessage("CardName is required.");
-        RuleFor(x => x.BasketCheckoutDto.CardNumber).NotEmpty().WithMessage("CardNumber is required.");
-        RuleFor(x => x.BasketCheckoutDto.CVV)
-            .MaximumLength(3).WithMessage("CVV must be at most 3 characters.");
+        RuleFor(x => x.BasketCheckoutDto.PaymentToken).NotEmpty().WithMessage("PaymentToken is required.");
+        RuleFor(x => x.BasketCheckoutDto.PaymentReference).NotEmpty().WithMessage("PaymentReference is required.");
+        RuleFor(x => x.BasketCheckoutDto.CardLast4)
+            .NotEmpty().WithMessage("CardLast4 is required.")
+            .Length(4).WithMessage("CardLast4 must be exactly 4 characters.")
+            .Matches(@"^\d{4}$").WithMessage("CardLast4 must contain only digits.");
+        RuleFor(x => x.BasketCheckoutDto.CardBrand).NotEmpty().WithMessage("CardBrand is required.");
 	}
 }
 
-public class CheckoutBasketHandler(IBasketRepository repository , IPublishEndpoint publishEndpoint) : ICommandHandler<CheckoutBasketCommand, CheckoutBasketResult>
+public class CheckoutBasketHandler(IDocumentSession session, IDistributedCache cache) : ICommandHandler<CheckoutBasketCommand, CheckoutBasketResult>
 {
     public async Task<CheckoutBasketResult> Handle(CheckoutBasketCommand command, CancellationToken cancellationToken)
     {
-        var basket = await repository.GetBasket(command.BasketCheckoutDto.UserName, cancellationToken);
+        var basket = await session.LoadAsync<ShoppingCard>(command.BasketCheckoutDto.UserName, cancellationToken)
+            ?? throw new BasketNotFoundException(command.BasketCheckoutDto.UserName);
 
         if (!basket.Items.Any())
         {
             throw new BadRequestException("Checkout cannot proceed with an empty basket.");
         }
 
+        if (basket.Status == BasketStatus.CheckoutPending)
+        {
+            throw new BadRequestException("Checkout is already pending for this basket.");
+        }
+
+        var checkoutId = Guid.NewGuid();
         var eventMessage = command.BasketCheckoutDto.Adapt<BasketCheckoutEvent>();
+        eventMessage.CheckoutId = checkoutId;
         eventMessage.TotalPrice = basket.TotalPrice;
-        eventMessage.CardNumber = MaskCardNumber(command.BasketCheckoutDto.CardNumber);
-        eventMessage.CVV = RedactCvv();
         eventMessage.Items = basket.Items
             .Select(item => new BasketCheckoutItemEvent
             {
@@ -51,37 +62,28 @@ public class CheckoutBasketHandler(IBasketRepository repository , IPublishEndpoi
             })
             .ToList();
 
-        await publishEndpoint.Publish(eventMessage, cancellationToken); 
+        var outboxMessage = new BasketCheckoutOutboxMessage
+        {
+            CheckoutId = checkoutId,
+            UserName = basket.UserName,
+            Payload = eventMessage
+        };
 
-        await repository.DeleteBasket(command.BasketCheckoutDto.UserName, cancellationToken);
+        // OUTBOX/SAGA: mark basket as pending before event publish; final state comes from success/fail events.
+        basket.Status = BasketStatus.CheckoutPending;
+        basket.PendingCheckoutId = checkoutId;
+
+        // OUTBOX/SAGA: persist integration event to local outbox in same DB transaction as basket state change.
+        session.Store(basket);
+        session.Store(outboxMessage);
+
+        await session.SaveChangesAsync(cancellationToken);
+
+        await cache.SetStringAsync(
+            basket.UserName,
+            JsonSerializer.Serialize(basket),
+            cancellationToken);
 
         return new CheckoutBasketResult(true);
     }
-
-    private static string MaskCardNumber(string cardNumber)
-    {
-        if (string.IsNullOrWhiteSpace(cardNumber))
-        {
-            return "****";
-        }
-
-        var digitsOnly = new string(cardNumber.Where(char.IsDigit).ToArray());
-        if (digitsOnly.Length == 0)
-        {
-            return "****";
-        }
-
-        var containsMaskChars = cardNumber.Contains('*');
-        if (digitsOnly.Length <= 4)
-        {
-            return containsMaskChars
-                ? $"**** **** **** {digitsOnly}"
-                : "****";
-        }
-
-        var visiblePart = digitsOnly[^4..];
-        return $"**** **** **** {visiblePart}";
-    }
-
-    private static string RedactCvv() => "***";
 }

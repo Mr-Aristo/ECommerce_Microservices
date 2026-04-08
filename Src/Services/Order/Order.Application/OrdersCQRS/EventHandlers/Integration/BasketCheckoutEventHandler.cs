@@ -13,17 +13,48 @@ namespace Order.Application.OrdersCQRS.EventHandlers.Integration;
 /// The MapToCreateOrderCommand method is used to convert the incoming BasketCheckoutEvent data into a CreateOrderCommand, which contains all
 /// the necessary information to create a new order in the system based on the data received from the basket checkout process.
 /// </summary>
-public class BasketCheckoutEventHandler(ISender sender, ILogger<BasketCheckoutEventHandler> logger) : IConsumer<BasketCheckoutEvent>
+public class BasketCheckoutEventHandler(
+    ISender sender,
+    IPublishEndpoint publishEndpoint,
+    ILogger<BasketCheckoutEventHandler> logger) : IConsumer<BasketCheckoutEvent>
 {
     /// <summary>
     /// Consumes the BasketCheckoutEvent, processes it by mapping to a CreateOrderCommand, and sends the command for further handling.
     /// </summary>
     public async Task Consume(ConsumeContext<BasketCheckoutEvent> context)
     {
+        // OUTBOX/SAGA: consumes checkout event published from Basket outbox.
         logger.LogInformation("Integration event handled:{IntegrationEvent}", context.Message.GetType().Name);
 
-        var command = MapToCreateOrderCommand(context.Message);
-        await sender.Send(command);
+        try
+        {
+            var command = MapToCreateOrderCommand(context.Message);
+            var result = await sender.Send(command, context.CancellationToken);
+
+            // OUTBOX/SAGA: notify Basket service to finalize saga as success and clear pending basket.
+            await publishEndpoint.Publish(new BasketCheckoutSucceededEvent
+            {
+                CheckoutId = context.Message.CheckoutId,
+                UserName = context.Message.UserName,
+                OrderId = result.id
+            }, context.CancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(
+                ex,
+                "Checkout processing failed for checkout {CheckoutId} and user {UserName}.",
+                context.Message.CheckoutId,
+                context.Message.UserName);
+
+            // OUTBOX/SAGA: notify Basket service to compensate saga and reactivate basket.
+            await publishEndpoint.Publish(new BasketCheckoutFailedEvent
+            {
+                CheckoutId = context.Message.CheckoutId,
+                UserName = context.Message.UserName,
+                Reason = ex.Message
+            }, context.CancellationToken);
+        }
     }
 
     private CreateOrderCommand MapToCreateOrderCommand(BasketCheckoutEvent message)
@@ -45,12 +76,14 @@ public class BasketCheckoutEventHandler(ISender sender, ILogger<BasketCheckoutEv
 
         var paymentDto = new PaymentDto(
             message.CardName,
-            PaymentDataSanitizer.MaskCardNumber(message.CardNumber),
-            message.Expiration,
+            PaymentDataSanitizer.NormalizePaymentToken(message.PaymentToken),
+            message.PaymentReference,
             PaymentDataSanitizer.RedactCvv(),
             message.PaymentMethod);
 
-        var orderId = Guid.NewGuid();
+        var orderId = message.CheckoutId == Guid.Empty
+            ? Guid.NewGuid()
+            : message.CheckoutId;
         var orderItems = message.Items
             .Select(item => new OrderItemDto(orderId, item.ProductId, item.Quantity, item.Price))
             .ToList();
