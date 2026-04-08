@@ -1,4 +1,4 @@
-﻿using BuildingBlock.Exceptions;
+using BuildingBlock.Exceptions;
 using BuildingBlockMessaging.Events;
 using Microsoft.Extensions.Caching.Distributed;
 using BasketAPI.Exceptions;

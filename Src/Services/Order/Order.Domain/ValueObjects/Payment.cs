@@ -1,4 +1,4 @@
-﻿namespace Order.Domain.ValueObjects;
+namespace Order.Domain.ValueObjects;
 
 /// <summary>
 /// Represents payment information associated with an order.

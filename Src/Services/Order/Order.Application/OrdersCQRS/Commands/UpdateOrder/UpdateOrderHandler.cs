@@ -1,4 +1,4 @@
-﻿using Order.Application.Security;
+using Order.Application.Security;
 
 namespace Order.Application.OrdersCQRS.Commands.UpdateOrder;
 

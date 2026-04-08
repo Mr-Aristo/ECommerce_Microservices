@@ -1,4 +1,4 @@
-﻿
+
 using BuildingBlockMessaging.Events;
 using MassTransit;
 using Order.Application.OrdersCQRS.Commands.CreateOrder;
