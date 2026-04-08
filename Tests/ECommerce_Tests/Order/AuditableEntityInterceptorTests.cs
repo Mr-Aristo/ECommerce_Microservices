@@ -16,7 +16,9 @@ public class AuditableEntityInterceptorTests
         var method = typeof(AuditableEntityInterceptor).GetMethod("UpdateEntities", BindingFlags.Instance | BindingFlags.NonPublic);
         Assert.NotNull(method);
 
-        var options = new DbContextOptionsBuilder<FakeAuditableDbContext>().Options;
+        var options = new DbContextOptionsBuilder<FakeAuditableDbContext>()
+            .UseInMemoryDatabase(databaseName: $"audit-tests-{Guid.NewGuid()}")
+            .Options;
         using var context = new FakeAuditableDbContext(options);
 
         var entity = new FakeAuditableEntity { Id = Guid.NewGuid() };

@@ -2,6 +2,7 @@
 using BuildingBlockMessaging.Events;
 using MassTransit;
 using Order.Application.OrdersCQRS.Commands.CreateOrder;
+using Order.Application.Security;
 namespace Order.Application.OrdersCQRS.EventHandlers.Integration;
 
 /// <summary>
@@ -27,6 +28,11 @@ public class BasketCheckoutEventHandler(ISender sender, ILogger<BasketCheckoutEv
 
     private CreateOrderCommand MapToCreateOrderCommand(BasketCheckoutEvent message)
     {
+        if (message.Items is null || message.Items.Count == 0)
+        {
+            throw new ValidationException("BasketCheckoutEvent items cannot be null or empty.");
+        }
+
         // Create full order with incoming event data
         var addressDto = new AddressDto(
             message.FirstName,
@@ -39,12 +45,15 @@ public class BasketCheckoutEventHandler(ISender sender, ILogger<BasketCheckoutEv
 
         var paymentDto = new PaymentDto(
             message.CardName,
-            message.CardNumber,
+            PaymentDataSanitizer.MaskCardNumber(message.CardNumber),
             message.Expiration,
-            message.CVV,
+            PaymentDataSanitizer.RedactCvv(),
             message.PaymentMethod);
 
         var orderId = Guid.NewGuid();
+        var orderItems = message.Items
+            .Select(item => new OrderItemDto(orderId, item.ProductId, item.Quantity, item.Price))
+            .ToList();
 
 
         var orderDto = new OrderDto(
@@ -55,11 +64,7 @@ public class BasketCheckoutEventHandler(ISender sender, ILogger<BasketCheckoutEv
             BillingAddress: addressDto,
             Payment: paymentDto,
             Status: Order.Domain.Enums.OrderStatus.Pending,
-            OrderItems:
-            [
-                new OrderItemDto(orderId, new Guid("5334c996-8457-4cf0-815c-ed2b77c4ff61"), 2, 500),
-                new OrderItemDto(orderId, new Guid("c67d6323-e8b1-4bdf-9a75-b0d0d2e7e914"), 1, 400)
-            ]);
+            OrderItems: orderItems);
 
         return new CreateOrderCommand(orderDto);
     }

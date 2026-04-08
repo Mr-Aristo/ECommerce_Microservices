@@ -1,8 +1,12 @@
-﻿namespace Order.Application.OrdersCQRS.Commands.CreateOrder;
+﻿using Order.Application.Security;
+
+namespace Order.Application.OrdersCQRS.Commands.CreateOrder;
 public class CreateOrderHandler(IApplicationDbContext dbcontext) : ICommandHandler<CreateOrderCommand, CreateOrderResult>
 {
     public async Task<CreateOrderResult> Handle(CreateOrderCommand command, CancellationToken cancellationToken)
     {
+        await EnsureReferenceDataExistsAsync(command.Order, cancellationToken);
+
         var order = CreateNewOrder(command.Order);
         dbcontext.Orders.Add(order);
         await dbcontext.SaveChangesAsync(cancellationToken);
@@ -38,9 +42,9 @@ public class CreateOrderHandler(IApplicationDbContext dbcontext) : ICommandHandl
                 billingAddress: billingAddress,
                 payment: Payment.Of(
                     orderDto.Payment.CardName,
-                    orderDto.Payment.CardNumber,
+                    PaymentDataSanitizer.MaskCardNumber(orderDto.Payment.CardNumber),
                     orderDto.Payment.Expiration,
-                    orderDto.Payment.Cvv,
+                    PaymentDataSanitizer.RedactCvv(),
                     orderDto.Payment.PaymentMethod)
                 );
 
@@ -51,4 +55,82 @@ public class CreateOrderHandler(IApplicationDbContext dbcontext) : ICommandHandl
 
         return newOrder;
     }
+
+    private async Task EnsureReferenceDataExistsAsync(OrderDto orderDto, CancellationToken cancellationToken)
+    {
+        var hasChanges = false;
+
+        var customerId = CustomerId.Of(orderDto.CustomerId);
+        var customerExists = await dbcontext.Customers
+            .AnyAsync(c => c.Id == customerId, cancellationToken);
+
+        if (!customerExists)
+        {
+            dbcontext.Customers.Add(
+                Customer.Create(
+                    customerId,
+                    BuildCustomerName(orderDto),
+                    SelectCustomerEmail(orderDto)));
+            hasChanges = true;
+        }
+
+        foreach (var item in orderDto.OrderItems
+                     .GroupBy(i => i.ProductId)
+                     .Select(g => g.First()))
+        {
+            var productId = ProductId.Of(item.ProductId);
+            var productExists = await dbcontext.Products
+                .AnyAsync(p => p.Id == productId, cancellationToken);
+
+            if (productExists)
+            {
+                continue;
+            }
+
+            dbcontext.Products.Add(
+                Product.Create(
+                    productId,
+                    BuildFallbackProductName(item.ProductId),
+                    item.Price > 0 ? item.Price : 0.01m));
+            hasChanges = true;
+        }
+
+        if (hasChanges)
+        {
+            await dbcontext.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    private static string BuildCustomerName(OrderDto orderDto)
+    {
+        var firstName = orderDto.ShippingAddress.FirstName?.Trim();
+        var lastName = orderDto.ShippingAddress.LastName?.Trim();
+
+        var fullName = string.Join(
+            " ",
+            new[] { firstName, lastName }
+                .Where(part => !string.IsNullOrWhiteSpace(part)));
+
+        if (!string.IsNullOrWhiteSpace(fullName))
+        {
+            return fullName;
+        }
+
+        return !string.IsNullOrWhiteSpace(orderDto.OrderName)
+            ? orderDto.OrderName
+            : "guest";
+    }
+
+    private static string SelectCustomerEmail(OrderDto orderDto)
+    {
+        if (!string.IsNullOrWhiteSpace(orderDto.ShippingAddress.EmailAddress))
+        {
+            return orderDto.ShippingAddress.EmailAddress;
+        }
+
+        return orderDto.BillingAddress.EmailAddress;
+    }
+
+    private static string BuildFallbackProductName(Guid productId)
+        => $"CatalogProduct-{productId:N}";
 }

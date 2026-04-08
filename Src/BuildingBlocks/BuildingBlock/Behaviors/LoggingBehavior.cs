@@ -11,7 +11,7 @@ public class LoggingBehavior<TRequest, TResponse>
             "[START] Handle request={Request} - Response={Response} - RequestDate={RequestData}",
              typeof(TRequest).Name,
              typeof(TResponse).Name,
-             request );
+             request);
 
         var timer = Stopwatch.StartNew();
 

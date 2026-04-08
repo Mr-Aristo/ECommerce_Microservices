@@ -1,20 +1,22 @@
-﻿syntax = "proto3"; 
+syntax = "proto3";
 
 option csharp_namespace = "DiscountGrpc.Protos";
 
 package discount;
+import "google/protobuf/empty.proto";
 
+// DiscountProtoService defines the gRPC service for managing discounts (coupons).
 service DiscountProtoService {
-	// Discount CRUD Operations
 	rpc GetDiscount (GetDiscountRequest) returns (CouponModel);
 	rpc CreateDiscount (CreateDiscountRequest) returns (CouponModel);
 	rpc UpdateDiscount (UpdateDiscountRequest) returns (CouponModel);
 	rpc DeleteDiscount (DeleteDiscountRequest) returns (DeleteDiscountResponse);
+	rpc GetAllDiscounts (google.protobuf.Empty) returns (GetAllDiscountsResponse);
 }
 /*
-for the empty function
+bos bir fonksiyon icin 
 rpc GetDiscount () returns (CouponModel);
-firstly with import keyword need to add Empty proto and then empty prote must bass as parameter
+once import olarak bos proto eklenip sonra parametre gecilmeli.
 import "google/protobuf/empty.proto";
 rpc GetDiscount (google.protobuf.Empty) returns (CouponModel);
 */
@@ -29,7 +31,7 @@ message CouponModel {
 	int32 amount = 4;
 }
 /*
-to return more than one product or something else need to use keyword repeated
+birden fazla ururn dondurmek icin repeated kullanilir.
 message ProductListResponse {
     repeated ProductModel Products = 1;
 }
@@ -49,8 +51,11 @@ message DeleteDiscountRequest {
 message DeleteDiscountResponse {
 	bool success = 1;
 }
-//myproto.proto ya sag tiklayarak properties ve oradan build Action, gRPC gibi kisimlardan grpc hizmetleriyle
-//etkilesime gecebiliriz. 
-//build action ve startup class ayarlarinin yapmalisin.
 
+message GetAllDiscountsResponse{
+	// repeated kullanarak birden fazla coupon dondurebiliriz.
+	repeated CouponModel coupons = 1;
+}
 
+//Sagtiklayarek properties den build action ve stup class ayarlarinin yapmalisin.
+//Ayrica proto yu itemgroups icine eklemelisin.
