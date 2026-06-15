@@ -1,4 +1,5 @@
 using BuildingBlock.Logging;
+using BuildingBlock.Observability;
 
 //The reason of the typeof(Program).Assembly to provide to run commands and queriesd only in this progran.cs
 var assembly = typeof(Program).Assembly;
@@ -23,6 +24,9 @@ try
 
     //Serilog host (shared standard config: console + optional Seq)
     builder.Host.UseStandardSerilog("CatalogAPI");
+
+    //OpenTelemetry traces + metrics (OTLP)
+    builder.Services.AddStandardOpenTelemetry("CatalogAPI");
 
     var connString = builder.Configuration.GetConnectionString("PostgreDataBase");
 

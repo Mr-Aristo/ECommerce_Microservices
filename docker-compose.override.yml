@@ -68,6 +68,15 @@ services:
       - "5341:5341"   # ingestion
       - "8081:80"     # UI
 
+  otel-dashboard:
+    container_name: otel-dashboard
+    environment:
+      - DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS=true   # dev only: no login token
+    restart: always
+    ports:
+      - "18888:18888"   # UI (traces/metrics/logs)
+      - "18889:18889"   # OTLP gRPC ingestion
+
 # ---------------- Services ---------------------
   catalogapi:
     environment:
@@ -76,6 +85,7 @@ services:
       - ASPNETCORE_HTTPS_PORTS=8081
       - ConnectionStrings__PostgreDataBase=Server=catalogdb;Port=5432;Database=CatalogDb;User Id=postgres;Password=postgres;Include Error Detail=true
       - Seq__ServerUrl=http://seq:5341
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-dashboard:18889
     depends_on:
       catalogdb:
         condition: service_healthy
@@ -98,6 +108,7 @@ services:
       - MessageBroker__UserName=guest
       - MessageBroker__Password=guest
       - Seq__ServerUrl=http://seq:5341
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-dashboard:18889
     depends_on:
       basketdb:
         condition: service_healthy
@@ -121,6 +132,7 @@ services:
       - ASPNETCORE_HTTPS_PORTS=8081
       - ConnectionStrings__Database=Data Source=discountdb
       - Seq__ServerUrl=http://seq:5341
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-dashboard:18889
     ports:
       - "6002:8080"
       - "6062:8081"
@@ -156,6 +168,7 @@ services:
       - MessageBroker__Password=guest
       - FeatureManagement__OrderFulfillment=false
       - Seq__ServerUrl=http://seq:5341
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-dashboard:18889
     depends_on:
       orderdb:
         condition: service_healthy
@@ -180,6 +193,7 @@ services:
       - ReverseProxy__Clusters__basket-cluster__Destinations__destination1__Address=http://basketapi:8080/
       - ReverseProxy__Clusters__ordering-cluster__Destinations__destination1__Address=http://order.api:8080/
       - Seq__ServerUrl=http://seq:5341
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-dashboard:18889
     depends_on:
       - catalogapi
       - basketapi

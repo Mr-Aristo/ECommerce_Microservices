@@ -50,6 +50,9 @@ services:
   seq:
     image: datalust/seq:latest
 
+  otel-dashboard:
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:9.0
+
 volumes:
   postgres_catalog:
   postgres_basket:

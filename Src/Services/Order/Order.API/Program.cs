@@ -1,5 +1,6 @@
 
 using BuildingBlock.Logging;
+using BuildingBlock.Observability;
 using Order.Infrastructure.Data.Extentions;
 using Serilog;
 
@@ -8,6 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 //Serilog host (shared standard config: console + optional Seq)
 builder.Host.UseStandardSerilog("Order.API");
+
+//OpenTelemetry traces + metrics (OTLP)
+builder.Services.AddStandardOpenTelemetry("Order.API");
 
 builder.Services
     .AddApplicationServices(builder.Configuration)

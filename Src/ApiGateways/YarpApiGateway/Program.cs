@@ -1,4 +1,5 @@
 using BuildingBlock.Logging;
+using BuildingBlock.Observability;
 using Microsoft.AspNetCore.RateLimiting;
 using Serilog;
 
@@ -7,6 +8,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 //Serilog host (shared standard config: console + optional Seq)
 builder.Host.UseStandardSerilog("YarpApiGateway");
+
+//OpenTelemetry traces + metrics (OTLP)
+builder.Services.AddStandardOpenTelemetry("YarpApiGateway");
 
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));

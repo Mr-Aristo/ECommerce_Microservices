@@ -1,4 +1,5 @@
 using BuildingBlock.Logging;
+using BuildingBlock.Observability;
 using DiscountGrpc.Data;
 using DiscountGrpc.Services;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 //Serilog host (shared standard config: console + optional Seq)
 builder.Host.UseStandardSerilog("DiscountGrpc");
+
+//OpenTelemetry traces + metrics (OTLP)
+builder.Services.AddStandardOpenTelemetry("DiscountGrpc");
 
 // Add services to the container.
 builder.Services.AddGrpc();
