@@ -13,11 +13,24 @@ public class CachedBasketRepository(IBasketRepository repository, IDistributedCa
     {
         var cachedBasket = await cache.GetStringAsync(userName, cancellationToken);
         if (!string.IsNullOrEmpty(cachedBasket))
-            return JsonSerializer.Deserialize<ShoppingCard>(cachedBasket);
+        {
+            var deserialized = TryDeserialize(cachedBasket);
+            if (deserialized is not null)
+                return deserialized;
+
+            // Corrupt cache entry: drop it and fall back to the repository.
+            await cache.RemoveAsync(userName, cancellationToken);
+        }
 
         var basket = await repository.GetBasket(userName, cancellationToken);
         await cache.SetStringAsync(userName, JsonSerializer.Serialize(basket), cancellationToken);
         return basket;
+    }
+
+    private static ShoppingCard? TryDeserialize(string json)
+    {
+        try { return JsonSerializer.Deserialize<ShoppingCard>(json); }
+        catch (JsonException) { return null; }
     }
 
     public async Task<ShoppingCard> StoreBasket(ShoppingCard basket, CancellationToken cancellationToken = default)
