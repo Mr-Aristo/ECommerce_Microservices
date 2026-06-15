@@ -10,10 +10,13 @@ builder.Services.AddGrpc();
 builder.Services.AddDbContext<DiscountContext>(opts =>
         opts.UseSqlite(builder.Configuration.GetConnectionString("Database")));
 
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 app.UseMigration();
+app.MapHealthChecks("/health");
 // Map the gRPC service to the application's request pipeline, allowing it to handle incoming gRPC requests.
 app.MapGrpcService<DiscountService>();
 

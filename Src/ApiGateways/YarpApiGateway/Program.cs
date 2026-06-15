@@ -16,13 +16,17 @@ builder.Services.AddRateLimiter(rateLimiterOptions =>
     });
 });
 
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 // Configure the HTTP request pipeline.
 
 // RateLimit pipeline
 app.UseRateLimiter();
 
+app.MapHealthChecks("/health");
+
 // YARP proxy pipeline
-app.MapReverseProxy(); 
+app.MapReverseProxy();
 
 app.Run();
