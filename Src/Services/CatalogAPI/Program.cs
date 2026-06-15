@@ -1,13 +1,7 @@
+using BuildingBlock.Logging;
+
 //The reason of the typeof(Program).Assembly to provide to run commands and queriesd only in this progran.cs
 var assembly = typeof(Program).Assembly;
-
-Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Information()
-    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-    .Enrich.FromLogContext()
-    .Enrich.WithProperty("ServiceName", "CatalogAPI")
-    .WriteTo.Console(new RenderedCompactJsonFormatter())
-    .CreateLogger();
 
 try
 {
@@ -27,8 +21,8 @@ try
     builder.Services.AddValidatorsFromAssembly(assembly);
     builder.Services.AddCarter();
 
-    //Serilog host
-    builder.Host.UseSerilog();
+    //Serilog host (shared standard config: console + optional Seq)
+    builder.Host.UseStandardSerilog("CatalogAPI");
 
     var connString = builder.Configuration.GetConnectionString("PostgreDataBase");
 

@@ -1,8 +1,13 @@
 
+using BuildingBlock.Logging;
 using Order.Infrastructure.Data.Extentions;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
-// Add services to the container 
+// Add services to the container
+
+//Serilog host (shared standard config: console + optional Seq)
+builder.Host.UseStandardSerilog("Order.API");
 
 builder.Services
     .AddApplicationServices(builder.Configuration)
@@ -11,6 +16,7 @@ builder.Services
 
 var app = builder.Build();
 
+app.UseSerilogRequestLogging();
 app.UseApiServices();
 
 if (app.Environment.IsDevelopment())

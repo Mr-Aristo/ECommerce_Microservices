@@ -59,6 +59,15 @@ services:
       timeout: 5s
       retries: 5
 
+  seq:
+    container_name: seq
+    environment:
+      - ACCEPT_EULA=Y
+    restart: always
+    ports:
+      - "5341:5341"   # ingestion
+      - "8081:80"     # UI
+
 # ---------------- Services ---------------------
   catalogapi:
     environment:
@@ -66,6 +75,7 @@ services:
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
       - ConnectionStrings__PostgreDataBase=Server=catalogdb;Port=5432;Database=CatalogDb;User Id=postgres;Password=postgres;Include Error Detail=true
+      - Seq__ServerUrl=http://seq:5341
     depends_on:
       catalogdb:
         condition: service_healthy
@@ -87,6 +97,7 @@ services:
       - MessageBroker__Host=amqp://ecommerce-mq:5672
       - MessageBroker__UserName=guest
       - MessageBroker__Password=guest
+      - Seq__ServerUrl=http://seq:5341
     depends_on:
       basketdb:
         condition: service_healthy
@@ -109,6 +120,7 @@ services:
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
       - ConnectionStrings__Database=Data Source=discountdb
+      - Seq__ServerUrl=http://seq:5341
     ports:
       - "6002:8080"
       - "6062:8081"
@@ -143,6 +155,7 @@ services:
       - MessageBroker__UserName=guest
       - MessageBroker__Password=guest
       - FeatureManagement__OrderFulfillment=false
+      - Seq__ServerUrl=http://seq:5341
     depends_on:
       orderdb:
         condition: service_healthy
@@ -166,6 +179,7 @@ services:
       - ReverseProxy__Clusters__catalog-cluster__Destinations__destination1__Address=http://catalogapi:8080/
       - ReverseProxy__Clusters__basket-cluster__Destinations__destination1__Address=http://basketapi:8080/
       - ReverseProxy__Clusters__ordering-cluster__Destinations__destination1__Address=http://order.api:8080/
+      - Seq__ServerUrl=http://seq:5341
     depends_on:
       - catalogapi
       - basketapi

@@ -47,6 +47,9 @@ services:
       context: .
       dockerfile: Src/ApiGateways/YarpApiGateway/Dockerfile
 
+  seq:
+    image: datalust/seq:latest
+
 volumes:
   postgres_catalog:
   postgres_basket:

@@ -1,6 +1,8 @@
 ﻿using BasketAPI.CheckoutSaga;
 using BuildingBlock.Exceptions.Handlers;
+using BuildingBlock.Logging;
 using DiscountGrpc.Protos;
+using Serilog;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -14,6 +16,8 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        //Serilog host (shared standard config: console + optional Seq)
+        builder.Host.UseStandardSerilog("BasketAPI");
 
         //MediatR config
         var assembly = typeof(Program).Assembly;
@@ -104,6 +108,7 @@ public class Program
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
+        app.UseSerilogRequestLogging();
         app.MapCarter();
         app.UseExceptionHandler(options => { });
         app.UseHealthChecks("/health",
