@@ -6,7 +6,7 @@ namespace Order.Application.OrdersCQRS.EventHandlers.Domain;
 
 /// <summary>
 /// Handles the domain event when a new order is created.
-/// Publishes an integration event if the OrderFullfillment feature is enabled.
+/// Publishes an integration event if the OrderFulfillment feature is enabled.
 /// </summary>
 /// <param name="publishEndpoint">Endpoint used to publish integration events to the message bus.</param>
 /// <param name="featureManager">Manages feature flags to enable/disable runtime behaviors.</param>
@@ -17,7 +17,7 @@ public class OrderCreateEventHandler(IPublishEndpoint publishEndpoint, IFeatureM
     {
         logger.LogInformation("Domain Evenet handled : {DomainEvent}",domainEvent.GetType().Name);
 
-        if (await featureManager.IsEnabledAsync("OrderFullfillment"))
+        if (await featureManager.IsEnabledAsync(FeatureFlags.OrderFulfillment))
         {
             var orderCreateIntegrationEvent = domainEvent.order.ToOrderDto();
             await publishEndpoint.Publish(orderCreateIntegrationEvent, cancellationToken);
