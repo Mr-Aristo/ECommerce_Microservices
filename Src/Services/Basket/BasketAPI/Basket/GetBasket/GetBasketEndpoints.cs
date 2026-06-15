@@ -12,14 +12,14 @@ public class GetBasketEndpoints : ICarterModule
         {
             var result = await sender.Send(new GetBasketQuery(userName));
 
-            var respose = result.Adapt<GetBasketResponse>();
+            var response = result.Adapt<GetBasketResponse>();
 
-            return Results.Ok(respose);
+            return Results.Ok(response);
         })
-        .WithName("GetProductById")
+        .WithName("GetBasket")
         .Produces<GetBasketResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
-        .WithSummary("Get Product By Id")
-        .WithDescription("Get Product By Id");
+        .WithSummary("Get Basket")
+        .WithDescription("Get the basket for the given user name");
     }
 }
