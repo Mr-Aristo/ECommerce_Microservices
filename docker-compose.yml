@@ -41,6 +41,12 @@ services:
       context: .
       dockerfile: Src/Services/Order/Order.API/Dockerfile
 
+  yarpapigateway:
+    image: ${DOCKER_REGISTRY-}yarpapigateway
+    build:
+      context: .
+      dockerfile: Src/ApiGateways/YarpApiGateway/Dockerfile
+
 volumes:
   postgres_catalog:
   postgres_basket:
