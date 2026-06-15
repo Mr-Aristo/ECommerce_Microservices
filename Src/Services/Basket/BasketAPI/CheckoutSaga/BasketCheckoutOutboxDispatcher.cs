@@ -10,6 +10,8 @@ public class BasketCheckoutOutboxDispatcher(
 {
     private const int BatchSize = 20;
     private const int MaxRetryCount = 10;
+    // Keep published rows briefly for diagnostics, then purge so the outbox table stays small.
+    private static readonly TimeSpan PublishedRetention = TimeSpan.FromHours(1);
 
     /// <summary>
     /// This function works till app is closed
@@ -22,6 +24,7 @@ public class BasketCheckoutOutboxDispatcher(
             try
             {
                 await DispatchPendingMessagesAsync(stoppingToken);
+                await CleanupPublishedMessagesAsync(stoppingToken);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
@@ -87,6 +90,19 @@ public class BasketCheckoutOutboxDispatcher(
             session.Store(message);
         }
 
+        await session.SaveChangesAsync(cancellationToken);
+    }
+
+    // Purge already-published outbox rows older than the retention window.
+    private async Task CleanupPublishedMessagesAsync(CancellationToken cancellationToken)
+    {
+        using var scope = scopeFactory.CreateScope();
+        var store = scope.ServiceProvider.GetRequiredService<IDocumentStore>();
+
+        await using var session = store.LightweightSession();
+        var cutoff = DateTime.UtcNow - PublishedRetention;
+        session.DeleteWhere<BasketCheckoutOutboxMessage>(
+            x => x.Status == CheckoutOutboxStatus.Published && x.PublishedAt != null && x.PublishedAt < cutoff);
         await session.SaveChangesAsync(cancellationToken);
     }
 }

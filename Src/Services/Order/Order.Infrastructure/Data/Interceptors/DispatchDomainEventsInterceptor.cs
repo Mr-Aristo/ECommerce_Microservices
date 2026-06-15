@@ -7,12 +7,8 @@ namespace Order.Infrastructure.Data.Interceptors;
 public class DispatchDomainEventsInterceptor(IMediator mediator)
     : SaveChangesInterceptor
 {
-    public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
-    {
-        DispatchDomainEvents(eventData.Context).GetAwaiter().GetResult(); // .GetAwaiter().GetResult() for sync call.
-        return base.SavingChanges(eventData, result);
-    }
-
+    // Only the async path is overridden: the app saves exclusively via SaveChangesAsync,
+    // so dispatching here avoids a sync-over-async (GetAwaiter().GetResult()) deadlock risk.
     public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
     {
         await DispatchDomainEvents(eventData.Context);

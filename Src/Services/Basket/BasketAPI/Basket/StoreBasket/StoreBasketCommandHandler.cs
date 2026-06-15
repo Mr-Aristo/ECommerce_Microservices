@@ -34,7 +34,11 @@ public class StoreBasketCommandHandler
         // Communicate with Discount.Grpc and calculate lastest prices of products into sc
         foreach (var item in cart.Items)
         {
-            var coupon = await discountProto.GetDiscountAsync(new GetDiscountRequest { ProductName = item.ProductName }, cancellationToken: cancellationToken);
+            // Bound each call so an unresponsive Discount service can't hang checkout pricing.
+            var coupon = await discountProto.GetDiscountAsync(
+                new GetDiscountRequest { ProductName = item.ProductName },
+                deadline: DateTime.UtcNow.AddSeconds(5),
+                cancellationToken: cancellationToken);
             item.Price -= coupon.Amount;
         }
     }

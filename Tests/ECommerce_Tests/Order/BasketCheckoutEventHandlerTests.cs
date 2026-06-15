@@ -66,7 +66,9 @@ public class BasketCheckoutEventHandlerTests
 
         sender
             .Setup(s => s.Send(It.IsAny<CreateOrderCommand>(), It.IsAny<CancellationToken>()))
-            .Callback<CreateOrderCommand, CancellationToken>((request, _) => capturedCommand = request)
+            // ISender.Send resolves to Send<TResponse>(IRequest<TResponse>, ...), so the callback
+            // signature must use IRequest<CreateOrderResult>, not CreateOrderCommand.
+            .Callback<IRequest<CreateOrderResult>, CancellationToken>((request, _) => capturedCommand = request as CreateOrderCommand)
             .ReturnsAsync(new CreateOrderResult(createdOrderId));
 
         publishEndpoint

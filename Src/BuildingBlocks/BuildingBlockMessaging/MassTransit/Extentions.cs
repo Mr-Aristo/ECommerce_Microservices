@@ -27,6 +27,8 @@ public static class Extentions
                     host.Username(configuration["MessageBroker:UserName"]!);
                     host.Password(configuration["MessageBroker:Password"]!);
                 });
+                // Retry transient consumer failures before the message is faulted.
+                configurator.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
                 configurator.ConfigureEndpoints(context);
             });
             
