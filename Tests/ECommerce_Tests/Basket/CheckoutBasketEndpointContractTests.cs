@@ -21,9 +21,10 @@ public class CheckoutBasketEndpointContractTests
         endpointModule.AddRoutes(app);
 
         // Act
-        var endpoint = app.Services
-            .GetRequiredService<EndpointDataSource>()
-            .Endpoints
+        // Read from the builder's own data sources; the DI-resolved EndpointDataSource is not
+        // populated with minimal-API routes until the routing pipeline is built.
+        var endpoint = ((IEndpointRouteBuilder)app).DataSources
+            .SelectMany(dataSource => dataSource.Endpoints)
             .OfType<RouteEndpoint>()
             .Single(e => e.RoutePattern.RawText == "/basket/checkout");
 

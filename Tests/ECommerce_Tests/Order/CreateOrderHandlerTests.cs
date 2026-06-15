@@ -1,3 +1,4 @@
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Order.Application.DTOs;
 using Order.Application.OrdersCQRS.Commands.CreateOrder;
@@ -14,11 +15,14 @@ public class CreateOrderHandlerTests
     public async Task Handle_ShouldCreateMissingCustomerAndProductReferences()
     {
         // Arrange
+        using var connection = new SqliteConnection("DataSource=:memory:");
+        connection.Open();
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseInMemoryDatabase($"create-order-{Guid.NewGuid()}")
+            .UseSqlite(connection)
             .Options;
 
         await using var dbContext = new ApplicationDbContext(options);
+        await dbContext.Database.EnsureCreatedAsync();
         var sut = new CreateOrderHandler(dbContext);
 
         var customerId = Guid.NewGuid();
@@ -46,11 +50,14 @@ public class CreateOrderHandlerTests
     public async Task Handle_ShouldNotDuplicateCustomerOrProduct_WhenAlreadyExists()
     {
         // Arrange
+        using var connection = new SqliteConnection("DataSource=:memory:");
+        connection.Open();
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseInMemoryDatabase($"create-order-existing-{Guid.NewGuid()}")
+            .UseSqlite(connection)
             .Options;
 
         await using var dbContext = new ApplicationDbContext(options);
+        await dbContext.Database.EnsureCreatedAsync();
 
         var customerId = Guid.NewGuid();
         var productId = Guid.NewGuid();
@@ -75,11 +82,14 @@ public class CreateOrderHandlerTests
     public async Task Handle_ShouldReturnExistingOrder_WhenSameOrderIdIsReceivedAgain()
     {
         // Arrange
+        using var connection = new SqliteConnection("DataSource=:memory:");
+        connection.Open();
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseInMemoryDatabase($"create-order-idempotent-{Guid.NewGuid()}")
+            .UseSqlite(connection)
             .Options;
 
         await using var dbContext = new ApplicationDbContext(options);
+        await dbContext.Database.EnsureCreatedAsync();
 
         var existingOrderId = Guid.NewGuid();
         var customerId = Guid.NewGuid();
