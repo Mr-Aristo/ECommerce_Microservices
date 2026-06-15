@@ -20,13 +20,13 @@ public class BasketRepository(IDocumentSession session) : IBasketRepository
     public async Task<ShoppingCard> StoreBasket(ShoppingCard basket, CancellationToken cancellationToken = default)
     {
         session.Store(basket);
-        await session.SaveChangesAsync();
+        await session.SaveChangesAsync(cancellationToken);
         return basket;
     }
     public async Task<bool> DeleteBasket(string userName, CancellationToken cancellationToken = default)
     {
         session.Delete<ShoppingCard>(userName);
-        await session.SaveChangesAsync();
+        await session.SaveChangesAsync(cancellationToken);
         return true;
     }
         
