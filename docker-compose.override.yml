@@ -110,7 +110,7 @@ services:
       - MessageBroker__Host=amqp://ecommerce-mq:5672
       - MessageBroker__UserName=guest
       - MessageBroker__Password=guest
-      - FeatureManagement__OrderFullfilment=false
+      - FeatureManagement__OrderFulfillment=false
     depends_on:
       - orderdb
       - messagebroker
