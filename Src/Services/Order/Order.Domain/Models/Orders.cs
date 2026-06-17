@@ -147,7 +147,7 @@ public class Orders : Aggregate<OrderId>
 
         Status = next;
         _statusHistory.Add(new OrderStatusHistory { Status = next });
-        AddDomainEvent(new OrderUpdatedEvent(this));
+        AddDomainEvent(new OrderStatusChangedEvent(this));
     }
 
     private static bool IsValidTransition(OrderStatus from, OrderStatus to) => (from, to) switch

@@ -1,4 +1,6 @@
-﻿global using BuildingBlock.Exceptions.Handlers;
+﻿global using System.Security.Claims;
+global using BuildingBlock.Auth;
+global using BuildingBlock.Exceptions.Handlers;
 global using HealthChecks.UI.Client;
 global using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 global using Carter;
