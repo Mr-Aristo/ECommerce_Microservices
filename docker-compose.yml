@@ -9,6 +9,9 @@ services:
   orderdb:
     image: mcr.microsoft.com/mssql/server
 
+  usersdb:
+    image: postgres:17-alpine
+
   distributedcache:
     image: redis
 
@@ -41,6 +44,12 @@ services:
       context: .
       dockerfile: Src/Services/Order/Order.API/Dockerfile
 
+  usersapi:
+    image: ${DOCKER_REGISTRY-}usersapi
+    build:
+      context: .
+      dockerfile: Src/Services/UsersAPI/Dockerfile
+
   yarpapigateway:
     image: ${DOCKER_REGISTRY-}yarpapigateway
     build:
@@ -60,6 +69,7 @@ services:
 volumes:
   postgres_catalog:
   postgres_basket:
+  postgres_users:
 
 
 

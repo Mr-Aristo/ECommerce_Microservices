@@ -48,6 +48,23 @@ services:
       retries: 10
       start_period: 30s
 
+  usersdb:
+    container_name: usersdb
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=UsersDb
+    restart: always
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_users:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d UsersDb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   distributedcache:
     container_name: distributedcache
     restart: always
@@ -197,6 +214,25 @@ services:
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
       - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
 
+  usersapi:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - ConnectionStrings__PostgreDataBase=Server=usersdb;Port=5432;Database=UsersDb;User Id=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Include Error Detail=true
+      - Jwt__Authority=http://keycloak:8080/realms/eshop
+      - Seq__ServerUrl=http://seq:5341
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-dashboard:18889
+    depends_on:
+      usersdb:
+        condition: service_healthy
+    ports:
+      - "6004:8080"
+      - "6064:8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+
   yarpapigateway:
     container_name: yarpapigateway
     environment:
@@ -206,6 +242,7 @@ services:
       - ReverseProxy__Clusters__catalog-cluster__Destinations__destination1__Address=http://catalogapi:8080/
       - ReverseProxy__Clusters__basket-cluster__Destinations__destination1__Address=http://basketapi:8080/
       - ReverseProxy__Clusters__ordering-cluster__Destinations__destination1__Address=http://order.api:8080/
+      - ReverseProxy__Clusters__users-cluster__Destinations__destination1__Address=http://usersapi:8080/
       - Jwt__Authority=http://keycloak:8080/realms/eshop
       - Seq__ServerUrl=http://seq:5341
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-dashboard:18889
@@ -213,5 +250,6 @@ services:
       - catalogapi
       - basketapi
       - order.api
+      - usersapi
     ports:
       - "5004:8080"
