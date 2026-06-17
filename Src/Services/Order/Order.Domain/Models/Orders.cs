@@ -1,4 +1,6 @@
-﻿namespace Order.Domain.Models;
+﻿using Order.Domain.Exceptions;
+
+namespace Order.Domain.Models;
 
 //Order is rich-domain model
 
@@ -121,6 +123,36 @@ public class Orders : Aggregate<OrderId>
             _orderItems.Remove(orderItem);
         }
     }
+
+    // --- Order lifecycle (FEAT-001) ---
+    // Fulfillment transitions; invalid transitions are rejected by the aggregate.
+    public void Confirm() => ChangeStatus(OrderStatus.Confirmed);
+    public void Process() => ChangeStatus(OrderStatus.Processing);
+    public void Ship() => ChangeStatus(OrderStatus.Shipped);
+    public void Deliver() => ChangeStatus(OrderStatus.Delivered);
+    public void Cancel() => ChangeStatus(OrderStatus.Cancelled);
+
+    private void ChangeStatus(OrderStatus next)
+    {
+        if (!IsValidTransition(Status, next))
+            throw new DomainException($"Invalid order status transition: {Status} -> {next}.");
+
+        Status = next;
+        AddDomainEvent(new OrderUpdatedEvent(this));
+    }
+
+    private static bool IsValidTransition(OrderStatus from, OrderStatus to) => (from, to) switch
+    {
+        (OrderStatus.Pending, OrderStatus.Confirmed) => true,
+        (OrderStatus.Confirmed, OrderStatus.Processing) => true,
+        (OrderStatus.Processing, OrderStatus.Shipped) => true,
+        (OrderStatus.Shipped, OrderStatus.Delivered) => true,
+        (OrderStatus.Pending, OrderStatus.Cancelled) => true,
+        (OrderStatus.Confirmed, OrderStatus.Cancelled) => true,
+        (OrderStatus.Processing, OrderStatus.Cancelled) => true,
+        (OrderStatus.Pending, OrderStatus.Failed) => true,
+        _ => false
+    };
 }
 /*
   Private set amacin Order sinifinin ozelliklerinin Order sininfinin disinda
