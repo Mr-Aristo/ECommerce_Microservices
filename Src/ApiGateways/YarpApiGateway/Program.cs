@@ -1,3 +1,4 @@
+using BuildingBlock.Auth;
 using BuildingBlock.Logging;
 using BuildingBlock.Observability;
 using Microsoft.AspNetCore.RateLimiting;
@@ -11,6 +12,9 @@ builder.Host.UseStandardSerilog("YarpApiGateway");
 
 //OpenTelemetry traces + metrics (OTLP)
 builder.Services.AddStandardOpenTelemetry("YarpApiGateway");
+
+//Keycloak JWT auth (edge); route-level authz policies added later
+builder.Services.AddStandardJwtAuth(builder.Configuration);
 
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
@@ -31,6 +35,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 
 app.UseSerilogRequestLogging();
+app.UseAuthentication();
+app.UseAuthorization();
 
 // RateLimit pipeline
 app.UseRateLimiter();

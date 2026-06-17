@@ -1,4 +1,5 @@
 ﻿using BasketAPI.CheckoutSaga;
+using BuildingBlock.Auth;
 using BuildingBlock.Exceptions.Handlers;
 using BuildingBlock.Logging;
 using BuildingBlock.Observability;
@@ -22,6 +23,9 @@ public class Program
 
         //OpenTelemetry traces + metrics (OTLP)
         builder.Services.AddStandardOpenTelemetry("BasketAPI");
+
+        //Keycloak JWT auth (available; enforcement added with the protected endpoints)
+        builder.Services.AddStandardJwtAuth(builder.Configuration);
 
         //MediatR config
         var assembly = typeof(Program).Assembly;
@@ -113,6 +117,8 @@ public class Program
 
         // Configure the HTTP request pipeline.
         app.UseSerilogRequestLogging();
+        app.UseAuthentication();
+        app.UseAuthorization();
         app.MapCarter();
         app.UseExceptionHandler(options => { });
         app.UseHealthChecks("/health",

@@ -79,10 +79,12 @@ services:
 
   keycloak:
     container_name: keycloak
-    command: start-dev                                    # dev: in-memory, no TLS; realm setup is a follow-up step
+    command: start-dev --import-realm                     # dev: in-memory, no TLS; imports the eshop realm
     environment:
       - KC_BOOTSTRAP_ADMIN_USERNAME=${KEYCLOAK_ADMIN}
       - KC_BOOTSTRAP_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+    volumes:
+      - ./keycloak/realms:/opt/keycloak/data/import:ro
     restart: always
     ports:
       - "8088:8080"                                       # admin console + OIDC issuer (host)
@@ -117,6 +119,7 @@ services:
       - MessageBroker__Host=amqp://ecommerce-mq:5672
       - MessageBroker__UserName=${RABBITMQ_USER}
       - MessageBroker__Password=${RABBITMQ_PASS}
+      - Jwt__Authority=http://keycloak:8080/realms/eshop
       - Seq__ServerUrl=http://seq:5341
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-dashboard:18889
     depends_on:
@@ -177,6 +180,7 @@ services:
       - MessageBroker__UserName=${RABBITMQ_USER}
       - MessageBroker__Password=${RABBITMQ_PASS}
       - FeatureManagement__OrderFulfillment=false
+      - Jwt__Authority=http://keycloak:8080/realms/eshop
       - Seq__ServerUrl=http://seq:5341
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-dashboard:18889
     depends_on:
@@ -202,6 +206,7 @@ services:
       - ReverseProxy__Clusters__catalog-cluster__Destinations__destination1__Address=http://catalogapi:8080/
       - ReverseProxy__Clusters__basket-cluster__Destinations__destination1__Address=http://basketapi:8080/
       - ReverseProxy__Clusters__ordering-cluster__Destinations__destination1__Address=http://order.api:8080/
+      - Jwt__Authority=http://keycloak:8080/realms/eshop
       - Seq__ServerUrl=http://seq:5341
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-dashboard:18889
     depends_on:
