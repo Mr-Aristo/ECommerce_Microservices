@@ -53,6 +53,10 @@ services:
   otel-dashboard:
     image: mcr.microsoft.com/dotnet/aspire-dashboard:9.0
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    command: start-dev
+
 volumes:
   postgres_catalog:
   postgres_basket:

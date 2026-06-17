@@ -77,6 +77,16 @@ services:
       - "18888:18888"   # UI (traces/metrics/logs)
       - "18889:18889"   # OTLP gRPC ingestion
 
+  keycloak:
+    container_name: keycloak
+    command: start-dev                                    # dev: in-memory, no TLS; realm setup is a follow-up step
+    environment:
+      - KC_BOOTSTRAP_ADMIN_USERNAME=${KEYCLOAK_ADMIN}
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+    restart: always
+    ports:
+      - "8088:8080"                                       # admin console + OIDC issuer (host)
+
 # ---------------- Services ---------------------
   catalogapi:
     environment:
