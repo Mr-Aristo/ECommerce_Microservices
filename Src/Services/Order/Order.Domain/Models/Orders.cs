@@ -23,6 +23,13 @@ public class Orders : Aggregate<OrderId>
     /// </summary>
     public IReadOnlyList<OrderItem> OrderItems => _orderItems.AsReadOnly();
 
+    private readonly List<OrderStatusHistory> _statusHistory = new();
+
+    /// <summary>
+    /// Audit trail of status transitions (persisted as JSON).
+    /// </summary>
+    public IReadOnlyList<OrderStatusHistory> StatusHistory => _statusHistory.AsReadOnly();
+
     /// <summary>
     /// The ID of the customer who placed the order.
     /// </summary>
@@ -79,6 +86,7 @@ public class Orders : Aggregate<OrderId>
             Status = OrderStatus.Pending
         };
 
+        order._statusHistory.Add(new OrderStatusHistory { Status = OrderStatus.Pending });
         order.AddDomainEvent(new OrderCreatedEvent(order));
 
         return order;
@@ -138,6 +146,7 @@ public class Orders : Aggregate<OrderId>
             throw new DomainException($"Invalid order status transition: {Status} -> {next}.");
 
         Status = next;
+        _statusHistory.Add(new OrderStatusHistory { Status = next });
         AddDomainEvent(new OrderUpdatedEvent(this));
     }
 
