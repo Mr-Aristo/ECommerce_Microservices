@@ -1,4 +1,6 @@
-﻿global using BasketAPI.Models;
+﻿global using System.Security.Claims;
+global using BasketAPI.Models;
+global using BuildingBlock.Auth;
 global using Marten;
 global using Carter;
 global using MediatR;

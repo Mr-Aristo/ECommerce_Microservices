@@ -7,8 +7,11 @@ public class StoreBasketEndpoints : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/basket-store", async (StoreBasketRequest request, ISender sender) =>
+        app.MapPost("/basket-store", async (StoreBasketRequest request, ClaimsPrincipal user, ISender sender) =>
         {
+            // The basket is always keyed by the authenticated user (sub), never client-supplied.
+            request.Cart.UserName = user.GetUserId();
+
             var command = request.Adapt<StoreBasketCommand>();
 
             var result = await sender.Send(command);
@@ -17,10 +20,11 @@ public class StoreBasketEndpoints : ICarterModule
 
             return Results.Created($"/basket/{response.UserName}", response);
         })
-        .WithName("CreateProduct")
+        .RequireAuthorization()
+        .WithName("StoreBasket")
         .Produces<StoreBasketResponse>(StatusCodes.Status201Created)
         .ProducesProblem(StatusCodes.Status400BadRequest)
-        .WithSummary("Create Product")
-        .WithDescription("Create Product");
+        .WithSummary("Store Basket")
+        .WithDescription("Create or update the caller's basket");
     }
 }
