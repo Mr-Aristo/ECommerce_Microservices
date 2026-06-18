@@ -239,6 +239,7 @@ services:
       - ASPNETCORE_HTTPS_PORTS=8081
       - ConnectionStrings__PostgreDataBase=Server=usersdb;Port=5432;Database=UsersDb;User Id=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Include Error Detail=true
       - Jwt__Authority=http://keycloak:8080/realms/eshop
+      - Services__Catalog=http://catalogapi:8080
       - Seq__ServerUrl=http://seq:5341
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-dashboard:18889
     depends_on:
