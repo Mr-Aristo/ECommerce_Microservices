@@ -59,6 +59,12 @@ services:
       context: .
       dockerfile: Src/Services/PaymentAPI/Dockerfile
 
+  notificationapi:
+    image: ${DOCKER_REGISTRY-}notificationapi
+    build:
+      context: .
+      dockerfile: Src/Services/NotificationAPI/Dockerfile
+
   yarpapigateway:
     image: ${DOCKER_REGISTRY-}yarpapigateway
     build:
