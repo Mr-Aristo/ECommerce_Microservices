@@ -31,6 +31,11 @@ public class Orders : Aggregate<OrderId>
     public IReadOnlyList<OrderStatusHistory> StatusHistory => _statusHistory.AsReadOnly();
 
     /// <summary>
+    /// Return request against this order, if any (persisted as JSON).
+    /// </summary>
+    public Return? Return { get; private set; }
+
+    /// <summary>
     /// The ID of the customer who placed the order.
     /// </summary>
     public CustomerId CustomerId { get; private set; } = default!;
@@ -140,14 +145,63 @@ public class Orders : Aggregate<OrderId>
     public void Deliver() => ChangeStatus(OrderStatus.Delivered);
     public void Cancel() => ChangeStatus(OrderStatus.Cancelled);
 
+    // --- Returns (FEAT-001 Phase 2) ---
+    public void RequestReturn(string reason, TimeSpan window)
+    {
+        if (Status != OrderStatus.Delivered)
+            throw new DomainException("Only delivered orders can be returned.");
+
+        var deliveredAt = _statusHistory.LastOrDefault(h => h.Status == OrderStatus.Delivered)?.OccurredAt;
+        if (deliveredAt is null || DateTime.UtcNow - deliveredAt.Value > window)
+            throw new DomainException("The return window has expired.");
+
+        Return = new Return(reason);
+        SetStatus(OrderStatus.ReturnRequested);
+        AddDomainEvent(new ReturnRequestedEvent(this));
+    }
+
+    public void ApproveReturn()
+    {
+        if (Return is null || Return.Status != ReturnStatus.Requested)
+            throw new DomainException("No pending return to approve.");
+
+        Return.Approve();
+        AddDomainEvent(new ReturnApprovedEvent(this));
+    }
+
+    public void RejectReturn(string reason)
+    {
+        if (Return is null || Return.Status != ReturnStatus.Requested)
+            throw new DomainException("No pending return to reject.");
+
+        Return.Reject(reason);
+        SetStatus(OrderStatus.Delivered);
+    }
+
+    // Completes the refund (driven by the Payment service in a later step) and closes the return.
+    public void CompleteRefund()
+    {
+        if (Return is null || Return.Status != ReturnStatus.Approved)
+            throw new DomainException("The return is not approved.");
+
+        Return.MarkRefunded();
+        SetStatus(OrderStatus.Returned);
+        AddDomainEvent(new OrderReturnedEvent(this));
+    }
+
     private void ChangeStatus(OrderStatus next)
+    {
+        SetStatus(next);
+        AddDomainEvent(new OrderStatusChangedEvent(this));
+    }
+
+    private void SetStatus(OrderStatus next)
     {
         if (!IsValidTransition(Status, next))
             throw new DomainException($"Invalid order status transition: {Status} -> {next}.");
 
         Status = next;
         _statusHistory.Add(new OrderStatusHistory { Status = next });
-        AddDomainEvent(new OrderStatusChangedEvent(this));
     }
 
     private static bool IsValidTransition(OrderStatus from, OrderStatus to) => (from, to) switch
@@ -160,6 +214,10 @@ public class Orders : Aggregate<OrderId>
         (OrderStatus.Confirmed, OrderStatus.Cancelled) => true,
         (OrderStatus.Processing, OrderStatus.Cancelled) => true,
         (OrderStatus.Pending, OrderStatus.Failed) => true,
+        // Returns
+        (OrderStatus.Delivered, OrderStatus.ReturnRequested) => true,
+        (OrderStatus.ReturnRequested, OrderStatus.Delivered) => true,
+        (OrderStatus.ReturnRequested, OrderStatus.Returned) => true,
         _ => false
     };
 }
