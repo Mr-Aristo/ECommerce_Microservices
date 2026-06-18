@@ -4,6 +4,7 @@ using BuildingBlock.Observability;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
+using UsersAPI.Integration.Catalog;
 
 var builder = WebApplication.CreateBuilder(args);
 var assembly = typeof(Program).Assembly;
@@ -22,6 +23,12 @@ builder.Services.AddMediatR(config =>
 });
 builder.Services.AddValidatorsFromAssembly(assembly);
 builder.Services.AddCarter();
+
+// Catalog HTTP client for favorites enrichment (best-effort read; degrades if Catalog is down)
+builder.Services.AddHttpClient<ICatalogClient, CatalogClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Services:Catalog"] ?? "http://localhost:6000");
+});
 
 // Persistence (Marten / PostgreSQL); UserProfile keyed by Keycloak sub
 builder.Services.AddMarten(opts =>

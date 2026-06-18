@@ -1,6 +1,10 @@
+using UsersAPI.Integration.Catalog;
+
 namespace UsersAPI.Favorites.GetFavorites;
 
-public record GetFavoritesResponse(List<FavoriteItem> Favorites);
+// Favorite enriched with a Catalog product summary. Available=false when the product could not be fetched.
+public record FavoriteProduct(Guid ProductId, DateTime AddedAt, string? Name, decimal? Price, string? ImageFile, bool Available);
+public record GetFavoritesResponse(List<FavoriteProduct> Favorites);
 
 public class GetFavoritesEndpoint : ICarterModule
 {
@@ -14,20 +18,33 @@ public class GetFavoritesEndpoint : ICarterModule
         .RequireAuthorization()
         .WithName("GetFavorites")
         .Produces<GetFavoritesResponse>(StatusCodes.Status200OK)
-        .WithSummary("List my favorite products");
-        // Note: enriching with Catalog product summaries is a follow-up (needs a Catalog batch-by-ids read).
+        .WithSummary("List my favorite products (enriched with Catalog summaries)");
     }
 }
 
 public record GetFavoritesQuery(string UserId) : IQuery<GetFavoritesResult>;
-public record GetFavoritesResult(List<FavoriteItem> Favorites);
+public record GetFavoritesResult(List<FavoriteProduct> Favorites);
 
-public class GetFavoritesQueryHandler(IDocumentSession session)
+public class GetFavoritesQueryHandler(IDocumentSession session, ICatalogClient catalog)
     : IQueryHandler<GetFavoritesQuery, GetFavoritesResult>
 {
     public async Task<GetFavoritesResult> Handle(GetFavoritesQuery query, CancellationToken cancellationToken)
     {
         var profile = await session.LoadAsync<UserProfile>(query.UserId, cancellationToken);
-        return new GetFavoritesResult(profile?.Favorites ?? new List<FavoriteItem>());
+        var favorites = profile?.Favorites ?? new List<FavoriteItem>();
+
+        if (favorites.Count == 0)
+            return new GetFavoritesResult(new List<FavoriteProduct>());
+
+        var summaries = await catalog.GetProductsAsync(
+            favorites.Select(f => f.ProductId).ToList(), cancellationToken);
+
+        var enriched = favorites.Select(f =>
+        {
+            summaries.TryGetValue(f.ProductId, out var p);
+            return new FavoriteProduct(f.ProductId, f.AddedAt, p?.Name, p?.Price, p?.ImageFile, p is not null);
+        }).ToList();
+
+        return new GetFavoritesResult(enriched);
     }
 }
