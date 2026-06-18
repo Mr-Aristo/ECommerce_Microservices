@@ -118,6 +118,9 @@ public class OrderConfiguration : IEntityTypeConfiguration<Orders>
         // Status transition audit trail stored as a JSON column on the Orders row.
         builder.OwnsMany(o => o.StatusHistory, b => b.ToJson());
 
+        // Return request stored as a JSON column on the Orders row.
+        builder.OwnsOne(o => o.Return, b => b.ToJson());
+
         builder.Property(o => o.TotalPrice);
     }
 }
