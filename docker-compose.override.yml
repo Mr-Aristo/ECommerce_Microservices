@@ -273,6 +273,22 @@ services:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
 
+  notificationapi:
+    container_name: notificationapi
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - MessageBroker__Host=amqp://ecommerce-mq:5672
+      - MessageBroker__UserName=${RABBITMQ_USER}
+      - MessageBroker__Password=${RABBITMQ_PASS}
+      - Seq__ServerUrl=http://seq:5341
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-dashboard:18889
+    depends_on:
+      messagebroker:
+        condition: service_healthy
+    ports:
+      - "6006:8080"
+
   yarpapigateway:
     container_name: yarpapigateway
     environment:
