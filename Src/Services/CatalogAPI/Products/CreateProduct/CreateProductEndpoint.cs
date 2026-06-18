@@ -22,6 +22,7 @@ public class CreateProductEndpoint : ICarterModule
             return Results.Created($"/products/{response.Id}", response);
         })
             //CarterExtentions for endpoint
+            .RequireAuthorization(policy => policy.RequireRole("catalog-manager", "super-admin"))
             .WithName("CreateProduct")
             .Produces<CreateProductResponse>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)

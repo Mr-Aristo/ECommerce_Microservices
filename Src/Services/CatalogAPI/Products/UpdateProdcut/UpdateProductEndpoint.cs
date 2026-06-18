@@ -17,6 +17,7 @@ public class UpdateProductEndpoint : ICarterModule
 
             Results.Ok(response);
         })
+            .RequireAuthorization(policy => policy.RequireRole("catalog-manager", "super-admin"))
             .WithName("UpdateProduct")
             .Produces<UpdateProductResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest)

@@ -1,3 +1,4 @@
+using BuildingBlock.Auth;
 using BuildingBlock.Logging;
 using BuildingBlock.Observability;
 
@@ -28,6 +29,9 @@ try
     //OpenTelemetry traces + metrics (OTLP)
     builder.Services.AddStandardOpenTelemetry("CatalogAPI");
 
+    //Keycloak JWT auth (browsing stays anonymous; product management is role-protected)
+    builder.Services.AddStandardJwtAuth(builder.Configuration);
+
     var connString = builder.Configuration.GetConnectionString("PostgreDataBase");
 
     if (string.IsNullOrWhiteSpace(connString))
@@ -49,6 +53,9 @@ try
 
     //Serilog take requests
     app.UseSerilogRequestLogging();
+
+    app.UseAuthentication();
+    app.UseAuthorization();
 
     app.MapCarter();
 
