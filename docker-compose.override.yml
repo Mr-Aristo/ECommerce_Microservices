@@ -65,6 +65,23 @@ services:
       timeout: 5s
       retries: 5
 
+  paymentdb:
+    container_name: paymentdb
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=PaymentDb
+    restart: always
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_payment:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d PaymentDb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   distributedcache:
     container_name: distributedcache
     restart: always
@@ -229,6 +246,29 @@ services:
     ports:
       - "6004:8080"
       - "6064:8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+
+  paymentapi:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - ConnectionStrings__PostgreDataBase=Server=paymentdb;Port=5432;Database=PaymentDb;User Id=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Include Error Detail=true
+      - MessageBroker__Host=amqp://ecommerce-mq:5672
+      - MessageBroker__UserName=${RABBITMQ_USER}
+      - MessageBroker__Password=${RABBITMQ_PASS}
+      - Seq__ServerUrl=http://seq:5341
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-dashboard:18889
+    depends_on:
+      paymentdb:
+        condition: service_healthy
+      messagebroker:
+        condition: service_healthy
+    ports:
+      - "6005:8080"
+      - "6065:8081"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro

@@ -12,6 +12,9 @@ services:
   usersdb:
     image: postgres:17-alpine
 
+  paymentdb:
+    image: postgres:17-alpine
+
   distributedcache:
     image: redis
 
@@ -50,6 +53,12 @@ services:
       context: .
       dockerfile: Src/Services/UsersAPI/Dockerfile
 
+  paymentapi:
+    image: ${DOCKER_REGISTRY-}paymentapi
+    build:
+      context: .
+      dockerfile: Src/Services/PaymentAPI/Dockerfile
+
   yarpapigateway:
     image: ${DOCKER_REGISTRY-}yarpapigateway
     build:
@@ -70,6 +79,7 @@ volumes:
   postgres_catalog:
   postgres_basket:
   postgres_users:
+  postgres_payment:
 
 
 
