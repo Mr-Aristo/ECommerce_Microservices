@@ -14,6 +14,7 @@ public class DeleteProductEndpoint : ICarterModule
 
             return Results.Ok(response);
         })
+        .RequireAuthorization(policy => policy.RequireRole("catalog-manager", "super-admin"))
         .WithName("DeleteProduct")
         .Produces<DeleteProductResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
