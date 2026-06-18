@@ -18,10 +18,17 @@ microservice architecture on the modern .NET 9 ecosystem:
 | **CatalogAPI** | Product CRUD & browsing | PostgreSQL (Marten) | Vertical slice | 6000 | 5000 |
 | **BasketAPI** | Basket CRUD, discount-aware pricing, checkout start | PostgreSQL (Marten), Redis, gRPC client, RabbitMQ | Vertical slice | 6001 | 5001 |
 | **DiscountGrpc** | Coupon management (gRPC) | SQLite (EF Core) | gRPC service | 6002 | 5002 |
-| **Order.API** | Order CRUD, order creation from events | SQL Server (EF Core), RabbitMQ | Clean Architecture | 6003 | 5003 |
-| **YarpApiGateway** | Reverse proxy + rate limiting | Proxies to services | — | 5004 | 5004 |
+| **Order.API** | Order CRUD, lifecycle, returns, order-from-event | SQL Server (EF Core), RabbitMQ | Clean Architecture | 6003 | 5003 |
+| **UsersAPI** | Profile, addresses, favorites (JIT provisioning) | PostgreSQL (Marten) | Vertical slice | 6004 | — |
+| **PaymentAPI** | Mock payment/refund (capture/refund) | PostgreSQL (Marten), RabbitMQ | Vertical slice (consumer) | 6005 | — |
+| **YarpApiGateway** | Reverse proxy + rate limiting + edge authz | Proxies to services | (in compose) | 5004 |
 
-> **Note:** The gateway is not part of docker-compose; it is run separately when needed.
+> **Infrastructure containers:** PostgreSQL ×4 (Catalog/Basket/Users/Payment), SQL Server (Order), Redis,
+> RabbitMQ, **Keycloak** (identity, `:8088`), **Seq** (logs, `:8081`), **Aspire Dashboard** (traces/metrics, `:18888`).
+> The gateway is now part of docker-compose.
+>
+> **Identity & security (FEAT-001):** Keycloak (OIDC/JWT); services + gateway validate JWT; protected
+> endpoints use `RequireAuthorization`; the gateway applies edge authz on protected routes.
 
 ## Architectural Styles — Two Approaches Coexist
 

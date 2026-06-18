@@ -18,10 +18,17 @@ desenlerini gösteren bir referans uygulamadır:
 | **CatalogAPI** | Ürün CRUD & gezinme | PostgreSQL (Marten) | Vertical slice | 6000 | 5000 |
 | **BasketAPI** | Sepet CRUD, indirimli fiyatlama, checkout başlatma | PostgreSQL (Marten), Redis, gRPC istemci, RabbitMQ | Vertical slice | 6001 | 5001 |
 | **DiscountGrpc** | Kupon yönetimi (gRPC) | SQLite (EF Core) | gRPC servis | 6002 | 5002 |
-| **Order.API** | Sipariş CRUD, event'ten sipariş oluşturma | SQL Server (EF Core), RabbitMQ | Clean Architecture | 6003 | 5003 |
-| **YarpApiGateway** | Reverse proxy + rate limiting | Servislere proxy | — | 5004 | 5004 |
+| **Order.API** | Sipariş CRUD, yaşam döngüsü, iade, event'ten sipariş | SQL Server (EF Core), RabbitMQ | Clean Architecture | 6003 | 5003 |
+| **UsersAPI** | Profil, adres, favoriler (JIT provisioning) | PostgreSQL (Marten) | Vertical slice | 6004 | — |
+| **PaymentAPI** | Mock ödeme/refund (capture/refund) | PostgreSQL (Marten), RabbitMQ | Vertical slice (consumer) | 6005 | — |
+| **YarpApiGateway** | Reverse proxy + rate limiting + edge authz | Servislere proxy | (compose'da) | 5004 |
 
-> **Not:** Gateway docker-compose içinde değildir; gerektiğinde ayrı çalıştırılır.
+> **Altyapı container'ları:** PostgreSQL ×4 (Catalog/Basket/Users/Payment), SQL Server (Order), Redis,
+> RabbitMQ, **Keycloak** (kimlik, `:8088`), **Seq** (loglar, `:8081`), **Aspire Dashboard** (trace/metric, `:18888`).
+> Gateway artık docker-compose'a dahildir.
+>
+> **Kimlik & güvenlik (FEAT-001):** Keycloak (OIDC/JWT); servisler + gateway JWT doğrular; korumalı
+> endpoint'ler `RequireAuthorization`; gateway korumalı route'larda edge authz uygular.
 
 ## Mimari Stiller — İki Yaklaşım Bir Arada
 
