@@ -10,5 +10,6 @@ public class UserProfile
     public string? LastName { get; set; }
     public string? Phone { get; set; }
     public List<Address> Addresses { get; set; } = new();
+    public List<FavoriteItem> Favorites { get; set; } = new();
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
