@@ -1,0 +1,30 @@
+{
+  "realm": "eshop",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "roles": {
+    "realm": [
+      { "name": "customer", "description": "Registered shopper" },
+      { "name": "support-agent", "description": "Handles returns and customer orders" },
+      { "name": "fulfillment-manager", "description": "Advances order status (process/ship/deliver)" },
+      { "name": "catalog-manager", "description": "Manages products and coupons" },
+      { "name": "super-admin", "description": "Full administration incl. user/role management" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "eshop-spa",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": ["*"],
+      "webOrigins": ["*"],
+      "attributes": { "pkce.code.challenge.method": "S256" }
+    }
+  ]
+}

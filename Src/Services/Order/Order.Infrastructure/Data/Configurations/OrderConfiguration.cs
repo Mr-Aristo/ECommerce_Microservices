@@ -115,6 +115,9 @@ public class OrderConfiguration : IEntityTypeConfiguration<Orders>
                 s => s.ToString(),
                 dbStatus => (OrderStatus)Enum.Parse(typeof(OrderStatus), dbStatus));
 
+        // Status transition audit trail stored as a JSON column on the Orders row.
+        builder.OwnsMany(o => o.StatusHistory, b => b.ToJson());
+
         builder.Property(o => o.TotalPrice);
     }
 }

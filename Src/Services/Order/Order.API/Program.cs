@@ -1,4 +1,5 @@
 
+using BuildingBlock.Auth;
 using BuildingBlock.Logging;
 using BuildingBlock.Observability;
 using Order.Infrastructure.Data.Extentions;
@@ -13,6 +14,9 @@ builder.Host.UseStandardSerilog("Order.API");
 //OpenTelemetry traces + metrics (OTLP)
 builder.Services.AddStandardOpenTelemetry("Order.API");
 
+//Keycloak JWT auth (available; enforcement added with the protected endpoints)
+builder.Services.AddStandardJwtAuth(builder.Configuration);
+
 builder.Services
     .AddApplicationServices(builder.Configuration)
     .AddInfrastructureServices(builder.Configuration)
@@ -21,6 +25,8 @@ builder.Services
 var app = builder.Build();
 
 app.UseSerilogRequestLogging();
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseApiServices();
 
 if (app.Environment.IsDevelopment())

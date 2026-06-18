@@ -1,4 +1,6 @@
-﻿namespace Order.Domain.Models;
+﻿using Order.Domain.Exceptions;
+
+namespace Order.Domain.Models;
 
 //Order is rich-domain model
 
@@ -20,6 +22,13 @@ public class Orders : Aggregate<OrderId>
     /// Read-only collection of items in the order.
     /// </summary>
     public IReadOnlyList<OrderItem> OrderItems => _orderItems.AsReadOnly();
+
+    private readonly List<OrderStatusHistory> _statusHistory = new();
+
+    /// <summary>
+    /// Audit trail of status transitions (persisted as JSON).
+    /// </summary>
+    public IReadOnlyList<OrderStatusHistory> StatusHistory => _statusHistory.AsReadOnly();
 
     /// <summary>
     /// The ID of the customer who placed the order.
@@ -77,6 +86,7 @@ public class Orders : Aggregate<OrderId>
             Status = OrderStatus.Pending
         };
 
+        order._statusHistory.Add(new OrderStatusHistory { Status = OrderStatus.Pending });
         order.AddDomainEvent(new OrderCreatedEvent(order));
 
         return order;
@@ -121,6 +131,37 @@ public class Orders : Aggregate<OrderId>
             _orderItems.Remove(orderItem);
         }
     }
+
+    // --- Order lifecycle (FEAT-001) ---
+    // Fulfillment transitions; invalid transitions are rejected by the aggregate.
+    public void Confirm() => ChangeStatus(OrderStatus.Confirmed);
+    public void Process() => ChangeStatus(OrderStatus.Processing);
+    public void Ship() => ChangeStatus(OrderStatus.Shipped);
+    public void Deliver() => ChangeStatus(OrderStatus.Delivered);
+    public void Cancel() => ChangeStatus(OrderStatus.Cancelled);
+
+    private void ChangeStatus(OrderStatus next)
+    {
+        if (!IsValidTransition(Status, next))
+            throw new DomainException($"Invalid order status transition: {Status} -> {next}.");
+
+        Status = next;
+        _statusHistory.Add(new OrderStatusHistory { Status = next });
+        AddDomainEvent(new OrderStatusChangedEvent(this));
+    }
+
+    private static bool IsValidTransition(OrderStatus from, OrderStatus to) => (from, to) switch
+    {
+        (OrderStatus.Pending, OrderStatus.Confirmed) => true,
+        (OrderStatus.Confirmed, OrderStatus.Processing) => true,
+        (OrderStatus.Processing, OrderStatus.Shipped) => true,
+        (OrderStatus.Shipped, OrderStatus.Delivered) => true,
+        (OrderStatus.Pending, OrderStatus.Cancelled) => true,
+        (OrderStatus.Confirmed, OrderStatus.Cancelled) => true,
+        (OrderStatus.Processing, OrderStatus.Cancelled) => true,
+        (OrderStatus.Pending, OrderStatus.Failed) => true,
+        _ => false
+    };
 }
 /*
   Private set amacin Order sinifinin ozelliklerinin Order sininfinin disinda

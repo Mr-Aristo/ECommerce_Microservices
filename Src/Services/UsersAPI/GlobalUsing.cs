@@ -1,0 +1,12 @@
+global using System.Security.Claims;
+global using Carter;
+global using MediatR;
+global using Mapster;
+global using Marten;
+global using FluentValidation;
+global using BuildingBlock.CQRS;
+global using BuildingBlock.CQRS.Handlers;
+global using BuildingBlock.Behaviors;
+global using BuildingBlock.Auth;
+global using BuildingBlock.Exceptions;
+global using UsersAPI.Models;
