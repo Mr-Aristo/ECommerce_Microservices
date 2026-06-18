@@ -15,12 +15,13 @@ microservice architecture on the modern .NET 9 ecosystem:
 
 | Service | Responsibility | Storage / Integration | Architectural Style | Docker Port | Local HTTP Port |
 |---|---|---|---|---|---|
-| **CatalogAPI** | Product CRUD & browsing | PostgreSQL (Marten) | Vertical slice | 6000 | 5000 |
+| **CatalogAPI** | Product CRUD & browsing (management endpoints protected by `catalog-manager` role) | PostgreSQL (Marten) | Vertical slice | 6000 | 5000 |
 | **BasketAPI** | Basket CRUD, discount-aware pricing, checkout start | PostgreSQL (Marten), Redis, gRPC client, RabbitMQ | Vertical slice | 6001 | 5001 |
 | **DiscountGrpc** | Coupon management (gRPC) | SQLite (EF Core) | gRPC service | 6002 | 5002 |
 | **Order.API** | Order CRUD, lifecycle, returns, order-from-event | SQL Server (EF Core), RabbitMQ | Clean Architecture | 6003 | 5003 |
 | **UsersAPI** | Profile, addresses, favorites (JIT provisioning) | PostgreSQL (Marten) | Vertical slice | 6004 | — |
 | **PaymentAPI** | Mock payment/refund (capture/refund) | PostgreSQL (Marten), RabbitMQ | Vertical slice (consumer) | 6005 | — |
+| **NotificationAPI** | Mock notifications (listens to order/return events) | — (no DB), RabbitMQ | Consumer-only | 6006 | — |
 | **YarpApiGateway** | Reverse proxy + rate limiting + edge authz | Proxies to services | (in compose) | 5004 |
 
 > **Infrastructure containers:** PostgreSQL ×4 (Catalog/Basket/Users/Payment), SQL Server (Order), Redis,

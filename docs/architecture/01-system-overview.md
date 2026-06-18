@@ -15,12 +15,13 @@ desenlerini gösteren bir referans uygulamadır:
 
 | Servis | Sorumluluk | Depolama / Entegrasyon | Mimari Stil | Docker Port | Local HTTP Port |
 |---|---|---|---|---|---|
-| **CatalogAPI** | Ürün CRUD & gezinme | PostgreSQL (Marten) | Vertical slice | 6000 | 5000 |
+| **CatalogAPI** | Ürün CRUD & gezinme (yönetim uçları `catalog-manager` rolüyle korumalı) | PostgreSQL (Marten) | Vertical slice | 6000 | 5000 |
 | **BasketAPI** | Sepet CRUD, indirimli fiyatlama, checkout başlatma | PostgreSQL (Marten), Redis, gRPC istemci, RabbitMQ | Vertical slice | 6001 | 5001 |
 | **DiscountGrpc** | Kupon yönetimi (gRPC) | SQLite (EF Core) | gRPC servis | 6002 | 5002 |
 | **Order.API** | Sipariş CRUD, yaşam döngüsü, iade, event'ten sipariş | SQL Server (EF Core), RabbitMQ | Clean Architecture | 6003 | 5003 |
 | **UsersAPI** | Profil, adres, favoriler (JIT provisioning) | PostgreSQL (Marten) | Vertical slice | 6004 | — |
 | **PaymentAPI** | Mock ödeme/refund (capture/refund) | PostgreSQL (Marten), RabbitMQ | Vertical slice (consumer) | 6005 | — |
+| **NotificationAPI** | Mock bildirim (order/return event'lerini dinler) | — (DB yok), RabbitMQ | Consumer-only | 6006 | — |
 | **YarpApiGateway** | Reverse proxy + rate limiting + edge authz | Servislere proxy | (compose'da) | 5004 |
 
 > **Altyapı container'ları:** PostgreSQL ×4 (Catalog/Basket/Users/Payment), SQL Server (Order), Redis,
