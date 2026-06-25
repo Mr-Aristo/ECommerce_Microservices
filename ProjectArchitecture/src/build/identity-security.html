@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><link rel="stylesheet" href="style.css">
+<style>
+  .step { background:#fff; border:2px solid #c4ccd8; border-radius:12px; padding:12px 16px; font-weight:700; font-size:15px; color:#1d2740; text-align:center; min-width:150px; }
+  .num { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background:#2f9be0; color:#fff; font-size:13px; font-weight:800; margin-right:6px; }
+  .kc { background:#edf4fb; border:2.5px solid #7cc0ec; border-radius:14px; padding:14px 18px; text-align:center; }
+  .decision { width:120px; height:120px; display:flex; align-items:center; justify-content:center; text-align:center;
+    background:#fff3cd; border:2.5px solid #f0c277; transform:rotate(45deg); border-radius:14px; }
+  .decision span { transform:rotate(-45deg); font-weight:800; color:#8a5a12; font-size:15px; }
+</style></head>
+<body>
+<div class="canvas" style="width:1260px">
+  <h1 class="title">Identity &amp; Security &mdash; <span class="accent">Keycloak (OIDC / JWT)</span></h1>
+
+  <div class="row mid gap-lg">
+    <div class="client"><div class="scr">🖥️</div><div class="lbl">Client</div></div>
+
+    <div class="col gap">
+      <div class="kc">
+        <img class="logo" src="../logos/keycloak.svg" style="height:50px">
+        <div style="font-weight:800;color:#15294b;margin-top:4px">Keycloak</div>
+        <div class="note">eshop realm</div>
+      </div>
+      <div class="note" style="text-align:center"><span class="num">1</span>login &nbsp; <span class="num">2</span>JWT token</div>
+    </div>
+
+    <div class="arrow">
+      <div class="cap"><span class="num">3</span> Bearer JWT</div>
+      <svg width="78" height="22"><line x1="2" y1="11" x2="62" y2="11" stroke="#2b3a55" stroke-width="3"/><polygon points="62,4 78,11 62,18" fill="#2b3a55"/></svg>
+    </div>
+
+    <div class="col mid gap">
+      <div class="step">YARP Gateway<br><span class="note">validate issuer / signature</span></div>
+      <div class="row mid gap-sm"><span class="note">JWKS &rarr;</span><img class="logo" src="../logos/keycloak.svg" style="height:30px"></div>
+    </div>
+
+    <div class="arrow">
+      <div class="cap"><span class="num">4</span> forward</div>
+      <svg width="78" height="22"><line x1="2" y1="11" x2="62" y2="11" stroke="#2b3a55" stroke-width="3"/><polygon points="62,4 78,11 62,18" fill="#2b3a55"/></svg>
+    </div>
+
+    <div class="step">Service<br><span class="note">validates JWT +<br>RequireAuthorization</span></div>
+
+    <div class="arrow">
+      <div class="cap muted">role / scope<br>(catalog-manager)</div>
+      <svg width="78" height="22"><line x1="2" y1="11" x2="62" y2="11" stroke="#2b3a55" stroke-width="3"/><polygon points="62,4 78,11 62,18" fill="#2b3a55"/></svg>
+    </div>
+
+    <div class="col gap" style="align-items:center">
+      <span class="pill" style="background:#d8edda;border-color:#9fcfa6;color:#1f6b2c">✓ authorized &rarr; handle</span>
+      <span class="pill" style="background:#f7d9dd;border-color:#e7aeb6;color:#a13340">✗ 401 / 403</span>
+    </div>
+  </div>
+
+  <div class="strip" style="margin-top:28px">
+    <img src="../logos/keycloak.svg" title="Keycloak">
+    <span class="badge">OIDC / OAuth2</span>
+    <span class="badge">JWT Bearer</span>
+    <span class="badge">RequireAuthorization</span>
+    <img src="../logos/dotnetcore.svg" title="ASP.NET Core">
+    <span class="badge">.NET 9</span>
+  </div>
+</div>
+</body></html>

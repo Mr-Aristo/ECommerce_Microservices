@@ -1,0 +1,145 @@
+/* ===== Shared design system for E-Commerce architecture diagrams =====
+   Emulates the original infographic style: navy titles, dashed sky-blue
+   containers, layered stacks, colored service cards, brand-logo strip. */
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #ffffff; }
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  color: #16243d;
+  -webkit-font-smoothing: antialiased;
+}
+.canvas {
+  position: relative;
+  background: #ffffff;
+  padding: 30px 38px 26px;
+}
+.title {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: .2px;
+  color: #15294b;
+  margin: 0 0 22px;
+}
+.title .accent { color: #2f9be0; }
+
+/* dashed containers */
+.group {
+  position: relative;
+  border: 3px dashed #2f9be0;
+  border-radius: 20px;
+  padding: 30px 26px 22px;
+}
+.group.inner {
+  border: 2.5px dashed #8a93a3;
+  border-radius: 16px;
+}
+.group-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #15294b;
+  text-align: center;
+  margin: 0 0 18px;
+}
+.group-title.sm { font-size: 16px; }
+
+/* layout helpers */
+.row { display: flex; align-items: center; }
+.col { display: flex; flex-direction: column; }
+.center { justify-content: center; }
+.mid { align-items: center; }
+.gap-sm { gap: 10px; } .gap { gap: 18px; } .gap-lg { gap: 30px; }
+.grow { flex: 1; }
+
+/* client block */
+.client { text-align: center; min-width: 120px; }
+.client .scr { font-size: 64px; line-height: 1; }
+.client .lbl { font-weight: 800; font-size: 18px; margin-top: 4px; }
+
+/* labeled arrow */
+.arrow { display: flex; flex-direction: column; align-items: center; color: #2b3a55; min-width: 90px; }
+.arrow .cap { font-weight: 800; font-size: 14px; color: #15294b; text-align: center; margin-bottom: 4px; line-height: 1.15; }
+.arrow .cap.muted { font-weight: 700; color: #5a6577; }
+.arrow svg { display: block; }
+
+/* service card */
+.svc {
+  background: #eef0fb;
+  border: 2.5px solid #aeb7ea;
+  border-radius: 14px;
+  padding: 14px 22px;
+  font-weight: 800;
+  font-size: 19px;
+  color: #1d2740;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(40,55,120,.10);
+  min-width: 150px;
+}
+.svc .sub { display:block; font-weight:600; font-size:12.5px; color:#5b6577; margin-top:3px; }
+.svc.aspnet { position: relative; }
+
+/* layered architecture stack */
+.stack {
+  background: #ffffff;
+  border: 2px solid #c4ccd8;
+  border-radius: 10px;
+  padding: 8px;
+  min-width: 240px;
+}
+.stack .cap { text-align:center; font-weight:700; font-size:13px; color:#5b6577; margin:2px 0 6px; }
+.layer {
+  border-radius: 7px;
+  padding: 11px 14px;
+  font-weight: 700;
+  font-size: 15px;
+  text-align: center;
+  margin: 6px 0;
+  border: 1.5px solid rgba(0,0,0,.06);
+}
+.layer.ui    { background: #d5e6fb; }
+.layer.app   { background: #f7d9dd; }
+.layer.domain{ background: #d8edda; }
+.layer.infra { background: #e4e6e9; }
+.layer.data  { background: #d8edda; }
+.layer.biz   { background: #f7d9dd; }
+
+/* vertical slice tab */
+.vtab {
+  display: flex; align-items: center; justify-content: center;
+  background: #fde7bf; border: 1.5px solid #f0c277; border-radius: 7px;
+  padding: 6px; margin-right: 8px;
+}
+.vtab span { writing-mode: vertical-rl; transform: rotate(180deg); font-weight: 800; font-size: 14px; color: #8a5a12; letter-spacing: .5px; }
+
+/* db + container icons */
+.db { text-align: center; }
+.db .lbl { font-weight: 800; font-size: 15px; margin-bottom: 4px; color:#15294b; }
+.cargo { font-size: 50px; line-height: 1; text-align:center; }
+.cargo .lbl { font-size: 13px; font-weight: 700; color:#15294b; }
+
+/* logos */
+img.logo { object-fit: contain; vertical-align: middle; }
+.bus { /* rabbitmq vertical bus */ text-align:center; }
+
+/* bottom tech strip */
+.strip {
+  display: flex; align-items: center; justify-content: center;
+  gap: 26px; flex-wrap: wrap; margin-top: 16px;
+}
+.strip img { height: 40px; width: auto; object-fit: contain; }
+.strip .badge {
+  font-weight: 800; font-size: 15px; color: #2b3a55;
+  background: #eef1f6; border: 1.5px solid #cdd5e1; border-radius: 8px; padding: 7px 12px;
+}
+
+/* small pill / note */
+.pill {
+  display:inline-block; background:#fff3cd; border:1.5px solid #f0c277;
+  border-radius: 999px; padding: 4px 12px; font-weight:700; font-size:13px; color:#8a5a12;
+}
+.note { font-size: 13px; color:#5b6577; font-weight:600; }
+
+/* badge label over a card (role) */
+.rolechip {
+  background:#fde7bf;border:1.5px solid #f0c277;border-radius:999px;
+  padding:3px 10px;font-size:12px;font-weight:800;color:#8a5a12;display:inline-block;
+}

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><link rel="stylesheet" href="style.css"></head>
+<body>
+<div class="canvas" style="width:1140px">
+  <h1 class="title">Notification Microservice &mdash; <span class="accent">Consumer-only</span></h1>
+
+  <div class="row mid gap">
+    <div class="client"><img class="logo" src="../logos/rabbitmq.svg" style="height:64px"><div class="lbl">RabbitMQ</div></div>
+    <div class="arrow">
+      <div class="cap">order / return<br>events</div>
+      <svg width="84" height="22"><line x1="2" y1="11" x2="68" y2="11" stroke="#2b3a55" stroke-width="3"/><polygon points="68,4 84,11 68,18" fill="#2b3a55"/></svg>
+    </div>
+
+    <div class="group grow" style="padding-top:34px">
+      <img class="logo" src="../logos/docker.svg" style="position:absolute;top:12px;left:16px;height:52px">
+      <div class="group-title">Notification Microservice</div>
+
+      <div class="group inner">
+        <div class="group-title sm">Event-driven &bull; no database</div>
+        <div class="row mid gap-lg center">
+
+          <div class="stack" style="min-width:300px">
+            <div class="cap">MassTransit consumers</div>
+            <div class="layer ui">Order / return event consumers</div>
+            <div class="layer app">Notification handler</div>
+            <div class="layer infra">Mock delivery &mdash; email / log stub</div>
+          </div>
+
+          <div class="arrow"><svg width="60" height="22"><line x1="2" y1="11" x2="44" y2="11" stroke="#2b3a55" stroke-width="3"/><polygon points="44,4 60,11 44,18" fill="#2b3a55"/></svg></div>
+          <div class="cargo">📦<div class="lbl">Notification.API<br>Container</div></div>
+          <div class="col mid gap-sm">
+            <div class="scr" style="font-size:54px">📧</div>
+            <span class="pill">No database</span>
+          </div>
+        </div>
+
+        <div class="strip">
+          <img src="../logos/rabbitmq.svg" title="RabbitMQ / MassTransit">
+          <span class="badge">MassTransit</span>
+          <img src="../logos/dotnetcore.svg" title="ASP.NET Core">
+          <span class="badge">.NET 9</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body></html>
