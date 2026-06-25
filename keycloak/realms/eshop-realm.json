@@ -26,5 +26,27 @@
       "webOrigins": ["*"],
       "attributes": { "pkce.code.challenge.method": "S256" }
     }
+  ],
+  "users": [
+    {
+      "username": "customer1",
+      "enabled": true,
+      "email": "customer1@eshop.local",
+      "emailVerified": true,
+      "firstName": "Cem",
+      "lastName": "Customer",
+      "credentials": [{ "type": "password", "value": "Passw0rd!", "temporary": false }],
+      "realmRoles": ["customer"]
+    },
+    {
+      "username": "admin1",
+      "enabled": true,
+      "email": "admin1@eshop.local",
+      "emailVerified": true,
+      "firstName": "Ada",
+      "lastName": "Admin",
+      "credentials": [{ "type": "password", "value": "Passw0rd!", "temporary": false }],
+      "realmRoles": ["super-admin", "catalog-manager", "support-agent", "fulfillment-manager", "customer"]
+    }
   ]
 }
