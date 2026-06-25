@@ -97,10 +97,12 @@ services:
     container_name: seq
     environment:
       - ACCEPT_EULA=Y
+      # Seq 2024+ requires a first-run admin password or an explicit opt-out; disable auth for local dev.
+      - SEQ_FIRSTRUN_NOAUTHENTICATION=true
     restart: always
     ports:
       - "5341:5341"   # ingestion
-      - "8081:80"     # UI
+      - "8081:80"     # UI (open http://localhost:8081)
 
   otel-dashboard:
     container_name: otel-dashboard
@@ -117,6 +119,10 @@ services:
     environment:
       - KC_BOOTSTRAP_ADMIN_USERNAME=${KEYCLOAK_ADMIN}
       - KC_BOOTSTRAP_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+      # Fixed frontend issuer (host) + dynamic backchannel so services fetch JWKS via keycloak:8080.
+      # This keeps token `iss` identical for host clients and in-cluster services.
+      - KC_HOSTNAME=http://localhost:8088
+      - KC_HOSTNAME_BACKCHANNEL_DYNAMIC=true
     volumes:
       - ./keycloak/realms:/opt/keycloak/data/import:ro
     restart: always
@@ -236,7 +242,6 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
-      - ASPNETCORE_HTTPS_PORTS=8081
       - ConnectionStrings__PostgreDataBase=Server=usersdb;Port=5432;Database=UsersDb;User Id=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Include Error Detail=true
       - Jwt__Authority=http://keycloak:8080/realms/eshop
       - Services__Catalog=http://catalogapi:8080
@@ -256,7 +261,6 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
-      - ASPNETCORE_HTTPS_PORTS=8081
       - ConnectionStrings__PostgreDataBase=Server=paymentdb;Port=5432;Database=PaymentDb;User Id=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Include Error Detail=true
       - MessageBroker__Host=amqp://ecommerce-mq:5672
       - MessageBroker__UserName=${RABBITMQ_USER}
