@@ -96,12 +96,14 @@ public class OrderConfiguration : IEntityTypeConfiguration<Orders>
                    paymentBuilder.Property(p => p.CardName)
                        .HasMaxLength(50);
 
+                   // CardNumber holds a tokenized payment value and Expiration holds a payment
+                   // reference (legacy column names, repurposed by FEAT-001) — sized for tokens/refs, not card data.
                    paymentBuilder.Property(p => p.CardNumber)
-                       .HasMaxLength(24)
+                       .HasMaxLength(200)
                        .IsRequired();
 
                    paymentBuilder.Property(p => p.Expiration)
-                       .HasMaxLength(10);
+                       .HasMaxLength(200);
 
                    paymentBuilder.Property(p => p.CVV)
                        .HasMaxLength(3);

@@ -190,13 +190,13 @@ namespace Order.Infrastructure.Migrations
 
                             b1.Property<string>("CardNumber")
                                 .IsRequired()
-                                .HasMaxLength(24)
-                                .HasColumnType("nvarchar(24)");
+                                .HasMaxLength(200)
+                                .HasColumnType("nvarchar(200)");
 
                             b1.Property<string>("Expiration")
                                 .IsRequired()
-                                .HasMaxLength(10)
-                                .HasColumnType("nvarchar(10)");
+                                .HasMaxLength(200)
+                                .HasColumnType("nvarchar(200)");
 
                             b1.Property<int>("PaymentMethod")
                                 .HasColumnType("int");
