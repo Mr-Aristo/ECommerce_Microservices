@@ -16,6 +16,10 @@ public class Program
 {
     public static void Main(string[] args)
     {
+        // Outbox stores UTC DateTime (CreatedAt/PublishedAt) into Marten 'timestamp without time zone'
+        // columns that the dispatcher orders/filters on. Npgsql 6+ rejects that unless legacy behavior is on.
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
         var builder = WebApplication.CreateBuilder(args);
 
         //Serilog host (shared standard config: console + optional Seq)
