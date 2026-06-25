@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><link rel="stylesheet" href="style.css"></head>
+<body>
+<div class="canvas" style="width:1180px">
+  <h1 class="title">Catalog Microservice &mdash; <span class="accent">Internal Architecture</span></h1>
+
+  <div class="row mid gap">
+    <!-- client -->
+    <div class="client">
+      <div class="scr">🖥️</div>
+      <div class="lbl">Client</div>
+    </div>
+
+    <div class="arrow">
+      <div class="cap">External IP<br>&amp; Port</div>
+      <svg width="78" height="22"><line x1="2" y1="11" x2="62" y2="11" stroke="#2b3a55" stroke-width="3"/><polygon points="62,4 78,11 62,18" fill="#2b3a55"/></svg>
+    </div>
+
+    <!-- outer microservice container -->
+    <div class="group grow" style="padding-top:34px">
+      <img class="logo" src="../logos/docker.svg" style="position:absolute;top:12px;left:16px;height:52px">
+      <div class="group-title">Catalog Microservice</div>
+
+      <div class="group inner">
+        <div class="group-title sm">Vertical Slice Architecture + CQRS</div>
+        <div class="row mid gap center">
+
+          <!-- vertical slice stack -->
+          <div class="row mid">
+            <div class="vtab"><span>Vertical Slice</span></div>
+            <div class="stack">
+              <div class="cap">Feature folder</div>
+              <div class="layer ui">Endpoint (Carter)</div>
+              <div class="layer app">Command / Query (MediatR)</div>
+              <div class="layer domain">Handler + Validator</div>
+              <div class="layer infra">Marten persistence</div>
+            </div>
+          </div>
+
+          <div class="arrow">
+            <div class="cap muted">CQRS</div>
+            <svg width="70" height="22"><line x1="2" y1="11" x2="54" y2="11" stroke="#2b3a55" stroke-width="3"/><polygon points="54,4 70,11 54,18" fill="#2b3a55"/></svg>
+          </div>
+
+          <!-- container -->
+          <div class="cargo">📦<div class="lbl">Catalog.API<br>Container</div></div>
+
+          <div class="arrow">
+            <svg width="70" height="22"><line x1="2" y1="11" x2="54" y2="11" stroke="#2b3a55" stroke-width="3"/><polygon points="54,4 70,11 54,18" fill="#2b3a55"/></svg>
+          </div>
+
+          <!-- db -->
+          <div class="db">
+            <div class="lbl">Catalog DB</div>
+            <img class="logo" src="../logos/postgresql.svg" style="height:92px">
+            <div class="note">PostgreSQL (Marten)</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center;margin-top:12px">
+        <span class="rolechip">Write endpoints require role: catalog-manager</span>
+      </div>
+
+      <div class="strip">
+        <img src="../logos/carter.png" title="Carter">
+        <img src="../logos/mediatr.png" title="MediatR">
+        <img src="../logos/fluentvalidation.png" title="FluentValidation">
+        <img src="../logos/mapster.png" title="Mapster">
+        <span class="badge">Marten</span>
+        <img src="../logos/postgresql.svg" title="PostgreSQL">
+        <img src="../logos/dotnetcore.svg" title="ASP.NET Core">
+        <span class="badge">.NET 9</span>
+      </div>
+    </div>
+  </div>
+</div>
+</body></html>
