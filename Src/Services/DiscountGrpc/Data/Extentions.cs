@@ -14,8 +14,10 @@ public static class Extentions
     {
         using var scope = app.ApplicationServices.CreateScope();
         using var dbContext = scope.ServiceProvider.GetRequiredService<DiscountContext>();
-        dbContext.Database.MigrateAsync();
+        // Run to completion before the scope/dbContext is disposed; the previous fire-and-forget
+        // MigrateAsync() was disposed mid-flight, so the schema (Coupons table) was never created.
+        dbContext.Database.Migrate();
 
-        return app; 
+        return app;
     }
 }

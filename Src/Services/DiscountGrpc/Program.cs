@@ -3,6 +3,7 @@ using BuildingBlock.Observability;
 using DiscountGrpc.Data;
 using DiscountGrpc.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,7 +18,10 @@ builder.Services.AddStandardOpenTelemetry("DiscountGrpc");
 builder.Services.AddGrpc();
 
 builder.Services.AddDbContext<DiscountContext>(opts =>
-        opts.UseSqlite(builder.Configuration.GetConnectionString("Database")));
+        opts.UseSqlite(builder.Configuration.GetConnectionString("Database"))
+            // EF9 flags a benign model/snapshot diff on this trivial model; the existing migration
+            // creates the Coupons schema + seed, so allow Migrate() to proceed.
+            .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
 
 builder.Services.AddHealthChecks();
 
