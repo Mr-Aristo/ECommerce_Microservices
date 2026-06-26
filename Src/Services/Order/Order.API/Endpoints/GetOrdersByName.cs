@@ -14,8 +14,10 @@ public class GetOrdersByName : ICarterModule
 
            var response = result.Adapt<GetOrdersByNameResponse>();
 
-           return Results.Ok(response); 
+           return Results.Ok(response);
        })
+        // Admin-only: operational lookup by order name.
+        .RequireAuthorization(policy => policy.RequireRole("fulfillment-manager", "support-agent", "super-admin"))
         .WithName("GetOrdersByName")
         .Produces<GetOrdersByNameResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)

@@ -15,6 +15,8 @@ public class GetOrdersByCustomer : ICarterModule
 
             return Results.Ok(response);
         })
+        // Admin-only: arbitrary customerId lookup. Customers use GET /me/orders instead.
+        .RequireAuthorization(policy => policy.RequireRole("fulfillment-manager", "support-agent", "super-admin"))
         .WithName("GetOrdersByCustomer")
         .Produces<GetOrdersByCustomerResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
