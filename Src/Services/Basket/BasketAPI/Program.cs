@@ -55,6 +55,8 @@ public class Program
             opts.Schema.For<ShoppingCard>().Identity(x => x.UserName);
             // OUTBOX/SAGA: local outbox document schema for checkout integration events.
             opts.Schema.For<BasketCheckoutOutboxMessage>().Identity(x => x.Id);
+            // IDEMPOTENCY: client Idempotency-Key -> checkout, so retried checkouts replay the result.
+            opts.Schema.For<IdempotencyRecord>().Identity(x => x.Key);
         });
 
         //Redis Config

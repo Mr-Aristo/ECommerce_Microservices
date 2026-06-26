@@ -5,11 +5,14 @@ using BasketAPI.Exceptions;
 
 namespace BasketAPI.Basket.CheckoutBasket;
 
-//Todo: db and cache must be atomic
-//need to ad concurrency secure, code must be idempotent, because of retry and possible duplicates.
+// Note: DB write (basket + outbox + idempotency) is atomic via a single SaveChangesAsync.
+// The Redis cache write after it is best-effort (cache is a read-through copy, rebuilt on miss).
+// Idempotency-Key replays a prior checkout; full optimistic-concurrency hardening for the rare
+// truly-simultaneous keyless checkout is tracked as a follow-up (would change all ShoppingCard writes).
 
 // Command & Handler Records
-public record CheckoutBasketCommand(BasketCheckoutDto BasketCheckoutDto) : ICommand<CheckoutBasketResult>;
+// IdempotencyKey is the client-supplied "Idempotency-Key" header (optional, null when absent).
+public record CheckoutBasketCommand(BasketCheckoutDto BasketCheckoutDto, string? IdempotencyKey = null) : ICommand<CheckoutBasketResult>;
 public record CheckoutBasketResult(bool IsSuccess);
     
 //FluentValidation
@@ -38,6 +41,18 @@ public class CheckoutBasketHandler(IDocumentSession session, IDistributedCache c
 {
     public async Task<CheckoutBasketResult> Handle(CheckoutBasketCommand command, CancellationToken cancellationToken)
     {
+        // IDEMPOTENCY: a retried checkout with the same key replays the original result
+        // instead of starting a second checkout (and a second payment downstream).
+        var idempotencyKey = command.IdempotencyKey;
+        if (!string.IsNullOrWhiteSpace(idempotencyKey))
+        {
+            var priorCheckout = await session.LoadAsync<IdempotencyRecord>(idempotencyKey, cancellationToken);
+            if (priorCheckout is not null)
+            {
+                return new CheckoutBasketResult(priorCheckout.IsSuccess);
+            }
+        }
+
         var basket = await session.LoadAsync<ShoppingCard>(command.BasketCheckoutDto.UserName, cancellationToken)
             ?? throw new BasketNotFoundException(command.BasketCheckoutDto.UserName);
 
@@ -79,6 +94,18 @@ public class CheckoutBasketHandler(IDocumentSession session, IDistributedCache c
         // OUTBOX/SAGA: persist integration event to local outbox in same DB transaction as basket state change.
         session.Store(basket);
         session.Store(outboxMessage);
+
+        // IDEMPOTENCY: record the key in the SAME transaction so a retry replays this checkout.
+        if (!string.IsNullOrWhiteSpace(idempotencyKey))
+        {
+            session.Store(new IdempotencyRecord
+            {
+                Key = idempotencyKey,
+                CheckoutId = checkoutId,
+                UserName = basket.UserName,
+                IsSuccess = true
+            });
+        }
 
         await session.SaveChangesAsync(cancellationToken);
 
