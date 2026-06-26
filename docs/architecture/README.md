@@ -18,6 +18,7 @@ MediatR ile CQRS desenlerini gösteren modüler bir e-ticaret backend'idir.
 | 07 | [Checkout Akışı (Outbox + Saga)](07-checkout-flow.md) | Uçtan uca eventual-consistent checkout |
 | 08 | [Gateway & Dağıtım](08-gateway-and-deployment.md) | YARP gateway, rate limiting, docker-compose, portlar |
 | 09 | [Test Stratejisi](09-testing.md) | xUnit, Moq, katman bazlı test yaklaşımı |
+| 10 | [Güvenlik & Auth](10-security-and-auth.md) | Keycloak/JWT, rol bazlı yetki (uç tablosu), IP-bazlı rate limit, checkout idempotency, ödeme verisi |
 
 ## Hızlı Mimari Şema
 

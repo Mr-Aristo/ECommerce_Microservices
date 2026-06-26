@@ -12,16 +12,29 @@ Local port: `5004`.
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
-builder.Services.AddRateLimiter(rateLimiterOptions =>
+// Gerçek istemci IP'sini X-Forwarded-For'dan çöz — yalnız GÜVENİLEN proxy'lerden.
+builder.Services.Configure<ForwardedHeadersOptions>(o =>
 {
-    rateLimiterOptions.AddFixedWindowLimiter("fixed", options =>
-    {
-        options.Window = TimeSpan.FromSeconds(10);
-        options.PermitLimit = 5;          // 10 saniyede 5 istek
-    });
+    o.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    // ForwardedHeaders:KnownProxies (virgülle ayrık IP) tanımlıysa eklenir; tanımlı değilse
+    // güvenli varsayılan (loopback) geçerli → istemci X-Forwarded-For SPOOF'layıp partition atlayamaz.
+});
+
+// FIX-030: istemci-başı (kullanıcı veya IP) PARTITION'lı rate limit — ortak kova değil.
+builder.Services.AddRateLimiter(opts =>
+{
+    opts.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    opts.OnRejected = async (ctx, ct) => { ctx.HttpContext.Response.Headers.RetryAfter = "10"; /* ... */ };
+    // Kimlik servislerle AYNI claim'den okunur (GetUserId -> NameIdentifier); "sub" doğrudan null gelir.
+    static string Key(HttpContext h) { var u = h.User.GetUserId(); return !string.IsNullOrEmpty(u) ? $"u:{u}" : $"ip:{h.Connection.RemoteIpAddress}"; }
+    opts.AddPolicy("fixed",          h => RateLimitPartition.GetFixedWindowLimiter(Key(h), _ => new() { Window = TimeSpan.FromSeconds(10), PermitLimit = 5 }));
+    opts.AddPolicy("auth-sensitive", h => RateLimitPartition.GetFixedWindowLimiter(Key(h), _ => new() { Window = TimeSpan.FromSeconds(10), PermitLimit = 20 }));
+    opts.AddPolicy("catalog-loose",  h => RateLimitPartition.GetFixedWindowLimiter(Key(h), _ => new() { Window = TimeSpan.FromSeconds(10), PermitLimit = 100 }));
 });
 
 var app = builder.Build();
+app.UseForwardedHeaders();
+app.UseAuthentication(); app.UseAuthorization();
 app.UseRateLimiter();
 app.MapReverseProxy();
 app.Run();
@@ -29,12 +42,15 @@ app.Run();
 
 ### Route → Cluster Eşlemesi (appsettings.json)
 
-| Route | Gelen path | Hedef (cluster) | Rate limit |
-|---|---|---|---|
-| `catalog-route` | `/catalog-service/{**catch-all}` | `http://localhost:6000/` | — |
-| `basket-route` | `/basket-service/{**catch-all}` | `http://localhost:6001/` | — |
-| `ordering-route` | `/ordering-service/{**catch-all}` | `http://localhost:6003/` | **fixed** (10sn/5 istek) |
-| `route1` (catch-all) | `{**catch-all}` | `http://localhost:6000/products` | — |
+| Route | Gelen path | Hedef (cluster) | Authz | Rate limit |
+|---|---|---|---|---|
+| `catalog-route` | `/catalog-service/{**catch-all}` | `http://localhost:6000/` | — (public) | `catalog-loose` (10sn/100) |
+| `basket-route` | `/basket-service/{**catch-all}` | `http://localhost:6001/` | `default` | `auth-sensitive` (10sn/20) |
+| `ordering-route` | `/ordering-service/{**catch-all}` | `http://localhost:6003/` | `default` | `fixed` (10sn/5) |
+| `users-route` | `/users-service/{**catch-all}` | `http://localhost:6004/` | `default` | `auth-sensitive` (10sn/20) |
+
+> Rate limit istemci-başı partition'lıdır (token `sub`, yoksa IP). Detaylı güvenlik modeli:
+> [10 — Güvenlik & Auth](10-security-and-auth.md).
 
 Her route bir `PathPattern: {**catch-all}` transform'u ile prefix'i sıyırır (örn.
 `/catalog-service/products` → servise `/products` olarak gider).

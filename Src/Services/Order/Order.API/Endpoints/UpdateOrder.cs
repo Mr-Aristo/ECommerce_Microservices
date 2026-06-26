@@ -19,6 +19,8 @@ public class UpdateOrder : ICarterModule
 
             return Results.Ok(response);
         })
+        // Admin-only: editing an order is a fulfillment operation.
+        .RequireAuthorization(policy => policy.RequireRole("fulfillment-manager", "super-admin"))
         .WithName("UpdateOrder")
         .Produces<UpdateOrderResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)

@@ -137,6 +137,7 @@ services:
       - ASPNETCORE_HTTPS_PORTS=8081
       - ConnectionStrings__PostgreDataBase=Server=catalogdb;Port=5432;Database=CatalogDb;User Id=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Include Error Detail=true
       - Jwt__Authority=http://keycloak:8080/realms/eshop
+      - Jwt__Audience=eshop-api
       - Seq__ServerUrl=http://seq:5341
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-dashboard:18889
     depends_on:
@@ -161,6 +162,7 @@ services:
       - MessageBroker__UserName=${RABBITMQ_USER}
       - MessageBroker__Password=${RABBITMQ_PASS}
       - Jwt__Authority=http://keycloak:8080/realms/eshop
+      - Jwt__Audience=eshop-api
       - Seq__ServerUrl=http://seq:5341
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-dashboard:18889
     depends_on:
@@ -222,6 +224,7 @@ services:
       - MessageBroker__Password=${RABBITMQ_PASS}
       - FeatureManagement__OrderFulfillment=false
       - Jwt__Authority=http://keycloak:8080/realms/eshop
+      - Jwt__Audience=eshop-api
       - Seq__ServerUrl=http://seq:5341
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-dashboard:18889
     depends_on:
@@ -244,6 +247,7 @@ services:
       - ASPNETCORE_HTTP_PORTS=8080
       - ConnectionStrings__PostgreDataBase=Server=usersdb;Port=5432;Database=UsersDb;User Id=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Include Error Detail=true
       - Jwt__Authority=http://keycloak:8080/realms/eshop
+      - Jwt__Audience=eshop-api
       - Services__Catalog=http://catalogapi:8080
       - Seq__ServerUrl=http://seq:5341
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-dashboard:18889
@@ -265,6 +269,8 @@ services:
       - MessageBroker__Host=amqp://ecommerce-mq:5672
       - MessageBroker__UserName=${RABBITMQ_USER}
       - MessageBroker__Password=${RABBITMQ_PASS}
+      - Jwt__Authority=http://keycloak:8080/realms/eshop
+      - Jwt__Audience=eshop-api
       - Seq__ServerUrl=http://seq:5341
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-dashboard:18889
     depends_on:
@@ -306,6 +312,7 @@ services:
       - ReverseProxy__Clusters__ordering-cluster__Destinations__destination1__Address=http://order.api:8080/
       - ReverseProxy__Clusters__users-cluster__Destinations__destination1__Address=http://usersapi:8080/
       - Jwt__Authority=http://keycloak:8080/realms/eshop
+      - Jwt__Audience=eshop-api
       - Seq__ServerUrl=http://seq:5341
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-dashboard:18889
     depends_on:

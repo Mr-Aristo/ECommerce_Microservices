@@ -24,6 +24,8 @@ public class GetOrders : ICarterModule
 
             return Results.Ok(response);
         })
+        // Admin-only: lists every customer's orders. Customers use GET /me/orders instead.
+        .RequireAuthorization(policy => policy.RequireRole("fulfillment-manager", "support-agent", "super-admin"))
         .WithName("GetOrders")
         .Produces<GetOrdersResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)

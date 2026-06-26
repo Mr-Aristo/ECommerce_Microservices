@@ -15,6 +15,8 @@ public class DeleteOrder : ICarterModule
 
             return Results.Ok(response);
         })
+        // Admin-only: deleting an order is destructive; narrowest role.
+        .RequireAuthorization(policy => policy.RequireRole("super-admin"))
         .WithName("DeleteOrder")
         .Produces<DeleteOrderResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
