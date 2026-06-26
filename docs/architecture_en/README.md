@@ -18,6 +18,7 @@ resilient checkout orchestration (Outbox + Saga), and CQRS patterns with MediatR
 | 07 | [Checkout Flow (Outbox + Saga)](07-checkout-flow.md) | End-to-end eventually-consistent checkout |
 | 08 | [Gateway & Deployment](08-gateway-and-deployment.md) | YARP gateway, rate limiting, docker-compose, ports |
 | 09 | [Testing Strategy](09-testing.md) | xUnit, Moq, layer-based testing approach |
+| 10 | [Security & Auth](10-security-and-auth.md) | Keycloak/JWT, role-based authorization (endpoint table), per-IP rate limiting, checkout idempotency, payment data |
 
 ## High-Level Architecture Diagram
 
