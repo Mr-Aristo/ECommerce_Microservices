@@ -1,3 +1,4 @@
+using BuildingBlock.Auth;
 using BuildingBlock.Logging;
 using BuildingBlock.Observability;
 using HealthChecks.UI.Client;
@@ -9,6 +10,9 @@ var assembly = typeof(Program).Assembly;
 
 builder.Host.UseStandardSerilog("PaymentAPI");
 builder.Services.AddStandardOpenTelemetry("PaymentAPI");
+
+// Keycloak JWT auth (edge enforced per-endpoint via RequireAuthorization)
+builder.Services.AddStandardJwtAuth(builder.Configuration);
 builder.Services.AddCarter();
 
 builder.Services.AddMarten(opts =>
@@ -26,6 +30,8 @@ builder.Services.AddHealthChecks()
 var app = builder.Build();
 
 app.UseSerilogRequestLogging();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapCarter();
 app.UseHealthChecks("/health", new HealthCheckOptions
 {

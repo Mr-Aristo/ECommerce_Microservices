@@ -10,6 +10,8 @@ public class GetPayment : ICarterModule
             var payment = await session.LoadAsync<PaymentRecord>(orderId);
             return payment is null ? Results.NotFound() : Results.Ok(payment);
         })
+        // Payment records are sensitive: support/finance + super-admin only.
+        .RequireAuthorization(policy => policy.RequireRole("support-agent", "super-admin"))
         .WithName("GetPayment")
         .Produces<PaymentRecord>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status404NotFound)
