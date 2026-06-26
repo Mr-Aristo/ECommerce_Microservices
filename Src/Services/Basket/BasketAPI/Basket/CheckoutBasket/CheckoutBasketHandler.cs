@@ -44,9 +44,15 @@ public class CheckoutBasketHandler(IDocumentSession session, IDistributedCache c
         // IDEMPOTENCY: a retried checkout with the same key replays the original result
         // instead of starting a second checkout (and a second payment downstream).
         var idempotencyKey = command.IdempotencyKey;
-        if (!string.IsNullOrWhiteSpace(idempotencyKey))
+        // Scope the key to the authenticated user (UserName = token sub) so two users sending the
+        // same Idempotency-Key value can't collide — otherwise user B replaying user A's key would
+        // get a false success and B's own basket would never be checked out.
+        var scopedKey = string.IsNullOrWhiteSpace(idempotencyKey)
+            ? null
+            : $"{command.BasketCheckoutDto.UserName}:{idempotencyKey}";
+        if (scopedKey is not null)
         {
-            var priorCheckout = await session.LoadAsync<IdempotencyRecord>(idempotencyKey, cancellationToken);
+            var priorCheckout = await session.LoadAsync<IdempotencyRecord>(scopedKey, cancellationToken);
             if (priorCheckout is not null)
             {
                 return new CheckoutBasketResult(priorCheckout.IsSuccess);
@@ -96,11 +102,11 @@ public class CheckoutBasketHandler(IDocumentSession session, IDistributedCache c
         session.Store(outboxMessage);
 
         // IDEMPOTENCY: record the key in the SAME transaction so a retry replays this checkout.
-        if (!string.IsNullOrWhiteSpace(idempotencyKey))
+        if (scopedKey is not null)
         {
             session.Store(new IdempotencyRecord
             {
-                Key = idempotencyKey,
+                Key = scopedKey,
                 CheckoutId = checkoutId,
                 UserName = basket.UserName,
                 IsSuccess = true

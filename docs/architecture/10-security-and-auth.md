@@ -108,8 +108,9 @@ doğrudan portlarından da erişilebilir). Aşağıdaki tablo mevcut durumu (FIX
 - **Edge authentication:** `basket`, `ordering`, `users` route'larında `AuthorizationPolicy: default`
   (kimliği doğrulanmış kullanıcı şart). `catalog` route'u public (okuma).
 - **Rate limiting (FIX-030):** İstemci-başı **partition**lı limiter — anahtar: kimlik
-  doğrulanmışsa token `sub`, değilse istemci IP. Böylece tek bir kötü niyetli istemci ortak
-  kovayı doldurup herkesi kilitleyemez. Limit aşımında `429` + `Retry-After`.
+  doğrulanmışsa kullanıcı (`GetUserId()` → `ClaimTypes.NameIdentifier`; Keycloak `sub` buraya
+  map'lenir — `"sub"` doğrudan okunmaz, null gelir), değilse istemci IP. Böylece tek bir kötü
+  niyetli istemci ortak kovayı doldurup herkesi kilitleyemez. Limit aşımında `429` + `Retry-After`.
 
   | Politika | Uygulanan route | Pencere / Limit |
   |---|---|---|
@@ -117,9 +118,9 @@ doğrudan portlarından da erişilebilir). Aşağıdaki tablo mevcut durumu (FIX
   | `auth-sensitive` (orta) | `basket-route`, `users-route` | 10sn / 20 |
   | `catalog-loose` (gevşek) | `catalog-route` | 10sn / 100 |
 
-- **Gerçek istemci IP'si:** `UseForwardedHeaders()` (X-Forwarded-For) ile proxy arkasında
-  gerçek IP partition'a yansır. **Prod uyarısı:** `KnownProxies/KnownNetworks` güvenilen LB
-  aralığıyla kısıtlanmalı, aksi halde X-Forwarded-For spoof'lanıp partition atlatılabilir.
+- **Gerçek istemci IP'si:** `UseForwardedHeaders()` X-Forwarded-For'u **yalnız** `ForwardedHeaders:KnownProxies`'te
+  tanımlı güvenilen proxy'lerden işler; tanımlı değilse güvenli varsayılan (loopback) geçerli olduğundan
+  doğrudan istemci X-Forwarded-For spoof'layıp partition'ı atlayamaz. Prod'da KnownProxies = LB/ingress IP'leri.
 
 > Servisler kendi portlarından (6000–6006) doğrudan da erişilebilir; bu nedenle yetki
 > **servis içinde** zorunludur (gateway bypass'a karşı). Prod'da servis portları dışa açılmamalı.
@@ -135,7 +136,8 @@ doğrudan portlarından da erişilebilir). Aşağıdaki tablo mevcut durumu (FIX
   anahtarı kontrol eder.
 - Anahtar daha önce işlendiyse, ilk sonucu **replay** eder (yeni checkout/ödeme başlatmaz).
   Aksi halde checkout'u başlatır ve anahtarı [`IdempotencyRecord`](../../Src/Services/Basket/BasketAPI/Models/IdempotencyRecord.cs)
-  (Marten dokümanı, key = Idempotency-Key) olarak **sepet + outbox ile aynı transaction'da** yazar.
+  (Marten dokümanı, key = **`{userId}:{Idempotency-Key}`** — kullanıcıya scope'lu, böylece iki kullanıcı
+  aynı anahtar değerini gönderse çakışmaz) olarak **sepet + outbox ile aynı transaction'da** yazar.
 - Anahtar yoksa eski davranış korunur (geriye dönük uyumlu). Mevcut `CheckoutPending` koruması
   ardışık tekrarları yine engeller.
 - **Mesaj düzeyi idempotency** ayrıca mevcuttur: `PaymentCaptureConsumer` ve order oluşturma

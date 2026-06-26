@@ -21,14 +21,23 @@ builder.Services.AddStandardJwtAuth(builder.Configuration);
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
-// Trust forwarded headers so the REAL client IP (not the proxy hop) drives rate-limit
-// partitioning. KnownProxies/Networks are cleared for local/dev; in production restrict
-// these to the trusted load balancer range, otherwise X-Forwarded-For can be spoofed.
+// Resolve the real client IP from X-Forwarded-For for rate-limit partitioning, but only
+// when the request comes through an explicitly trusted proxy (comma-separated IPs in
+// ForwardedHeaders:KnownProxies). With none configured the secure default applies (loopback
+// only), so a direct client cannot SPOOF X-Forwarded-For to escape its rate-limit partition.
+// In production set ForwardedHeaders:KnownProxies to the load balancer / ingress IPs.
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-    options.KnownNetworks.Clear();
-    options.KnownProxies.Clear();
+    var knownProxies = builder.Configuration["ForwardedHeaders:KnownProxies"];
+    if (!string.IsNullOrWhiteSpace(knownProxies))
+    {
+        foreach (var ip in knownProxies.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (System.Net.IPAddress.TryParse(ip, out var address))
+                options.KnownProxies.Add(address);
+        }
+    }
 });
 
 // Rate Limit — partitioned per client (authenticated sub, else client IP) so one abusive
@@ -42,10 +51,17 @@ builder.Services.AddRateLimiter(rateLimiterOptions =>
         await context.HttpContext.Response.WriteAsync("Rate limit exceeded. Try again later.", token);
     };
 
-    static string PartitionKey(HttpContext http) =>
-        http.User.FindFirst("sub")?.Value
-        ?? http.Connection.RemoteIpAddress?.ToString()
-        ?? "anonymous";
+    // Partition identity: the authenticated user via the SAME claim the services read
+    // (GetUserId -> ClaimTypes.NameIdentifier, where Keycloak 'sub' is mapped), else client IP.
+    // Reading "sub" directly would be null, collapsing every authenticated user onto the IP bucket.
+    // Prefixes keep the user-id and IP keyspaces from colliding.
+    static string PartitionKey(HttpContext http)
+    {
+        var userId = http.User.GetUserId();
+        return !string.IsNullOrEmpty(userId)
+            ? $"u:{userId}"
+            : $"ip:{http.Connection.RemoteIpAddress?.ToString() ?? "anonymous"}";
+    }
 
     // Strict: checkout / ordering (sensitive, write-heavy). Name kept as "fixed" for the existing ordering-route.
     rateLimiterOptions.AddPolicy("fixed", http =>

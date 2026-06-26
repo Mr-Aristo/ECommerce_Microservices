@@ -12,19 +12,21 @@ Local port: `5004`.
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
-// Gerçek istemci IP'sini X-Forwarded-For'dan çöz (rate-limit partition'ı için).
+// Gerçek istemci IP'sini X-Forwarded-For'dan çöz — yalnız GÜVENİLEN proxy'lerden.
 builder.Services.Configure<ForwardedHeadersOptions>(o =>
 {
     o.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-    o.KnownNetworks.Clear(); o.KnownProxies.Clear();   // prod'da güvenilen LB ile kısıtla
+    // ForwardedHeaders:KnownProxies (virgülle ayrık IP) tanımlıysa eklenir; tanımlı değilse
+    // güvenli varsayılan (loopback) geçerli → istemci X-Forwarded-For SPOOF'layıp partition atlayamaz.
 });
 
-// FIX-030: istemci-başı (sub veya IP) PARTITION'lı rate limit — ortak kova değil.
+// FIX-030: istemci-başı (kullanıcı veya IP) PARTITION'lı rate limit — ortak kova değil.
 builder.Services.AddRateLimiter(opts =>
 {
     opts.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
     opts.OnRejected = async (ctx, ct) => { ctx.HttpContext.Response.Headers.RetryAfter = "10"; /* ... */ };
-    static string Key(HttpContext h) => h.User.FindFirst("sub")?.Value ?? h.Connection.RemoteIpAddress?.ToString() ?? "anonymous";
+    // Kimlik servislerle AYNI claim'den okunur (GetUserId -> NameIdentifier); "sub" doğrudan null gelir.
+    static string Key(HttpContext h) { var u = h.User.GetUserId(); return !string.IsNullOrEmpty(u) ? $"u:{u}" : $"ip:{h.Connection.RemoteIpAddress}"; }
     opts.AddPolicy("fixed",          h => RateLimitPartition.GetFixedWindowLimiter(Key(h), _ => new() { Window = TimeSpan.FromSeconds(10), PermitLimit = 5 }));
     opts.AddPolicy("auth-sensitive", h => RateLimitPartition.GetFixedWindowLimiter(Key(h), _ => new() { Window = TimeSpan.FromSeconds(10), PermitLimit = 20 }));
     opts.AddPolicy("catalog-loose",  h => RateLimitPartition.GetFixedWindowLimiter(Key(h), _ => new() { Window = TimeSpan.FromSeconds(10), PermitLimit = 100 }));

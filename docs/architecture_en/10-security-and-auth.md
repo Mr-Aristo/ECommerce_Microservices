@@ -105,9 +105,10 @@ services are also reachable directly on their ports). The table reflects the sta
 
 - **Edge authentication:** `basket`, `ordering`, `users` routes carry `AuthorizationPolicy: default`
   (authenticated user required). `catalog` is public (read).
-- **Rate limiting (FIX-030):** Per-client **partitioned** limiter — key is the token `sub` when
-  authenticated, else the client IP. A single abusive client can no longer drain one shared
-  bucket and lock everyone out. On exceed: `429` + `Retry-After`.
+- **Rate limiting (FIX-030):** Per-client **partitioned** limiter — key is the authenticated user
+  (`GetUserId()` → `ClaimTypes.NameIdentifier`, where Keycloak `sub` is mapped — reading `"sub"`
+  directly returns null), else the client IP. A single abusive client can no longer drain one
+  shared bucket and lock everyone out. On exceed: `429` + `Retry-After`.
 
   | Policy | Applied to route | Window / Limit |
   |---|---|---|
@@ -115,9 +116,10 @@ services are also reachable directly on their ports). The table reflects the sta
   | `auth-sensitive` (moderate) | `basket-route`, `users-route` | 10s / 20 |
   | `catalog-loose` (loose) | `catalog-route` | 10s / 100 |
 
-- **Real client IP:** `UseForwardedHeaders()` (X-Forwarded-For) resolves the real client behind a
-  proxy into the partition. **Prod caveat:** restrict `KnownProxies/KnownNetworks` to the trusted
-  load balancer range, otherwise X-Forwarded-For can be spoofed to bypass the partition.
+- **Real client IP:** `UseForwardedHeaders()` honors X-Forwarded-For **only** from trusted proxies
+  listed in `ForwardedHeaders:KnownProxies`; with none configured the secure default (loopback) applies,
+  so a direct client cannot spoof X-Forwarded-For to bypass its partition. In prod, set KnownProxies to
+  the LB/ingress IPs.
 
 > Services are also reachable directly on their ports (6000–6006), so authorization is enforced
 > **inside each service** (defense against gateway bypass). In prod, do not expose service ports.
@@ -134,7 +136,8 @@ services are also reachable directly on their ports). The table reflects the sta
 - If the key was already processed, it **replays** the first result (no second checkout/payment).
   Otherwise it starts the checkout and stores the key as an
   [`IdempotencyRecord`](../../Src/Services/Basket/BasketAPI/Models/IdempotencyRecord.cs)
-  (Marten document, id = Idempotency-Key) **in the same transaction** as the basket + outbox.
+  (Marten document, id = **`{userId}:{Idempotency-Key}`** — scoped to the user so two users sending the
+  same key value cannot collide) **in the same transaction** as the basket + outbox.
 - Without a key the legacy behavior is preserved (backward compatible). The existing
   `CheckoutPending` guard still blocks sequential repeats.
 - **Message-level idempotency** also exists: `PaymentCaptureConsumer` and order creation are
