@@ -364,3 +364,5 @@ FodyWeavers.xsd
 
 # Local secrets for docker-compose (copy .env.example to .env)
 .env
+# graphify knowledge-graph output/cache (regenerable)
+graphify-out/
