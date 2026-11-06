@@ -12,8 +12,8 @@ public static class DatabaseExtentions
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         // Auto migrate
-        context.Database.MigrateAsync().GetAwaiter().GetResult();
-
+        //context.Database.MigrateAsync().GetAwaiter().GetResult(); // sync-over-async hatasi. thread burda bloklaniyor. 
+        await context.Database.MigrateAsync();
         await SeedAsync(context);
     }
 
